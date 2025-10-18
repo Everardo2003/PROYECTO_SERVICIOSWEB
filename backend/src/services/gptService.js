@@ -6,7 +6,7 @@ const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-export const generarPreguntas = async (materia, tema, cantidad=5) => {
+export const generarPreguntas = async (materia, tema, cantidad) => {
   const contenido = tema.subtemas.join("\n") + "\n" + tema.contenido;
   const prompt = `
 Genera ${cantidad} preguntas de opción múltiple basadas en la siguiente información:
@@ -46,5 +46,29 @@ Devuelve solo JSON válido, sin texto adicional. Ejemplo:
   } catch (error) {
     console.error("Error generando preguntas con Groq:", error);
     throw error;
+  }
+};
+
+export const generarRetroalimentacion = async ({ pregunta, respuestaUsuario, respuestaCorrecta, esCorrecta }) => {
+  try {
+    const prompt = `
+Eres un profesor de programación. 
+Evalúa la siguiente respuesta de un estudiante:
+Pregunta: ${pregunta}
+Respuesta del estudiante: ${respuestaUsuario}
+Respuesta correcta: ${respuestaCorrecta}
+¿La respuesta es correcta?: ${esCorrecta ? "Sí" : "No"}
+Da una retroalimentación corta y educativa (máx 2 líneas).
+`;
+
+    const response = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("Error generando retroalimentación con Groq:", error);
+    return "No se pudo generar retroalimentación en este momento.";
   }
 };

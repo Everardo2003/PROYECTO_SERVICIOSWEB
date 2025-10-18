@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import usuarioRoutes from './routes/usuarioRoutes.js';
 import materiaRoutes from './routes/materiaRoutes.js';
+import gptRoutes from "./routes/gptRoutes.js";
+import progresoRoutes from "./routes/progresoRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -14,6 +16,8 @@ connectDB();
 // Rutas base
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/materias', materiaRoutes);
+app.use("/api/gpt", gptRoutes);
+app.use("/api/progreso", progresoRoutes);
 
 // Ruta raíz
 app.get('/', (req, res) => {
