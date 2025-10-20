@@ -5,7 +5,7 @@ import { generarJWT } from '../utils/generarjwt.js';
 // Registrar usuario
 export const registrarUsuario = async (req, res) => {
   try {
-    const { nombre, correo, password } = req.body;
+    const { nombre, correo, password ,rol} = req.body;
 
     const usuarioExistente = await Usuario.findOne({ correo });
     if (usuarioExistente) return res.status(400).json({ msg: 'El correo ya está registrado' });
@@ -13,11 +13,12 @@ export const registrarUsuario = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const nuevoUsuario = new Usuario({ nombre, correo, password: hashedPassword });
+    const nuevoUsuario = new Usuario({ nombre, correo, password: hashedPassword, rol: rol && ['estudiante', 'admin'].includes(rol) ? rol : 'estudiante'});
     await nuevoUsuario.save();
 
     res.status(201).json({ msg: 'Usuario registrado correctamente' });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ msg: 'Error al registrar usuario', error });
   }
 };

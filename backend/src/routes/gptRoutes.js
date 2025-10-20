@@ -6,20 +6,39 @@ import Materia from "../models/Materia.js";
 const router = express.Router();
 
 router.post("/generar-preguntas", protegerRuta, async (req, res) => {
-  const { materiaId, temaIndex, cantidad } = req.body;
-
   try {
+    const { materiaId, temaIndex, cantidad } = req.body;
+
+    if (materiaId === undefined || temaIndex === undefined) {
+      return res.status(400).json({ msg: "Faltan parámetros obligatorios" });
+    }
+
+    // 1️⃣ Buscar materia
     const materia = await Materia.findById(materiaId);
     if (!materia) return res.status(404).json({ msg: "Materia no encontrada" });
 
-    // Buscar tema por índice
-    const tema = materia.temas[temaIndex];
-    if (!tema) return res.status(404).json({ msg: "Tema no encontrado" });
+    // 2️⃣ Validar índice del tema
+    if (temaIndex < 0 || temaIndex >= materia.temas.length) {
+      return res.status(404).json({ msg: "Tema no encontrado" });
+    }
 
-    const preguntas = await generarPreguntas(materia, tema, cantidad || 3);
-    res.json({ preguntas });
+    const tema = materia.temas[temaIndex];
+
+    // 3️⃣ Generar preguntas con la IA y guardar en MongoDB
+    const preguntas = await generarPreguntas(materiaId, temaIndex, cantidad || 3);
+
+    // 4️⃣ Devolver preguntas
+    res.status(200).json({
+      msg: "Preguntas generadas y guardadas correctamente",
+      preguntas,
+    });
+
   } catch (error) {
-    res.status(500).json({ msg: "Error generando preguntas", error });
+    console.error("Error en /generar-preguntas:", error);
+    res.status(500).json({
+      msg: "Error generando preguntas",
+      error: error.message,
+    });
   }
 });
 

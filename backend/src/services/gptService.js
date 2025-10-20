@@ -1,27 +1,40 @@
 import Groq from 'groq-sdk';
 import dotenv from 'dotenv';
+import Materia from '../models/Materia.js';
 dotenv.config();
 
 const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-export const generarPreguntas = async (materia, tema, cantidad) => {
+
+export const generarPreguntas = async (materiaId, temaIndex, cantidad) => {
+  // 1️⃣ Obtener la materia de la DB
+  const materia = await Materia.findById(materiaId);
+  if (!materia) throw new Error("Materia no encontrada");
+
+  // 2️⃣ Buscar el tema dentro de la materia
+  // temaIndex viene del body
+  const tema = materia.temas[temaIndex];
+  if (!tema) throw new Error("Tema no encontrado en la materia");
+
+
   const contenido = tema.subtemas.join("\n") + "\n" + tema.contenido;
+
   const prompt = `
-Genera ${cantidad} preguntas de opción múltiple basadas en la siguiente información:
-"${contenido}"
+  Genera ${cantidad} preguntas de opción múltiple basadas en la siguiente información:
+  "${contenido}"
 
-Devuelve solo JSON válido, sin texto adicional. Ejemplo:
+  Devuelve solo JSON válido, sin texto adicional. Ejemplo:
 
-[
-  {
-    "pregunta": "...",
-    "opciones": ["op1", "op2", "op3"],
-    "respuestaCorrecta": "..."
-  }
-]
-`;
+  [
+    {
+      "pregunta": "...",
+      "opciones": ["op1", "op2", "op3"],
+      "respuestaCorrecta": "..."
+    }
+  ]
+  `;
 
   try {
     const response = await client.chat.completions.create({
@@ -35,19 +48,37 @@ Devuelve solo JSON válido, sin texto adicional. Ejemplo:
 
     const texto = response.choices[0].message.content.trim();
 
-    // Intentar parsear JSON, si falla, devolver error amigable
+    // 3️⃣ Parsear JSON
+    let preguntas = [];
     try {
-      return JSON.parse(texto);
+      preguntas = JSON.parse(texto);
     } catch {
       console.error("Respuesta de Groq no es JSON válido:", texto);
       return [];
     }
+
+    // 4️⃣ Guardar preguntas en MongoDB, evitando duplicados
+    preguntas.forEach(p => {
+      const existe = tema.ejercicios.some(e => e.pregunta === p.pregunta);
+      if (!existe) {
+        tema.ejercicios.push({
+          pregunta: p.pregunta,
+          opciones: p.opciones,
+          respuestaCorrecta: p.respuestaCorrecta
+        });
+      }
+    });
+
+    await materia.save(); // guardar cambios en MongoDB
+
+    return preguntas;
 
   } catch (error) {
     console.error("Error generando preguntas con Groq:", error);
     throw error;
   }
 };
+
 
 export const generarRetroalimentacion = async ({ pregunta, respuestaUsuario, respuestaCorrecta, esCorrecta }) => {
   try {
