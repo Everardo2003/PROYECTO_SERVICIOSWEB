@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// Conectar con MongoDB (Compass)
+// Conectar con MongoDB 
 connectDB();
 
 // Rutas base

@@ -1,7 +1,6 @@
 import express from 'express';
 import { registrarUsuario, obtenerUsuarios,loginUsuario,actualizarUsuario,eliminarUsuario, } from '../controllers/usuarioController.js';
 
-
 const router = express.Router();
 
 //Endpoints
