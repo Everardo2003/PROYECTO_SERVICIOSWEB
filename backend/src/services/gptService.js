@@ -9,11 +9,11 @@ const client = new Groq({
 
 
 export const generarPreguntas = async (materiaId, temaIndex, cantidad) => {
-  // 1️⃣ Obtener la materia de la DB
+  // Obtener la materia de la DB
   const materia = await Materia.findById(materiaId);
   if (!materia) throw new Error("Materia no encontrada");
 
-  // 2️⃣ Buscar el tema dentro de la materia
+  // Buscar el tema dentro de la materia
   // temaIndex viene del body
   const tema = materia.temas[temaIndex];
   if (!tema) throw new Error("Tema no encontrado en la materia");
@@ -48,7 +48,7 @@ export const generarPreguntas = async (materiaId, temaIndex, cantidad) => {
 
     const texto = response.choices[0].message.content.trim();
 
-    // 3️⃣ Parsear JSON
+    // Parsear JSON
     let preguntas = [];
     try {
       preguntas = JSON.parse(texto);

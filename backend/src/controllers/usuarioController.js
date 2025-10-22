@@ -32,6 +32,56 @@ export const obtenerUsuarios = async (req, res) => {
     res.status(500).json({ msg: 'Error al obtener usuarios', error });
   }
 };
+//Actualizar usuario
+export const actualizarUsuario = async (req, res) => {
+  try {
+    const { nombre, correo, password, rol } = req.body;
+
+    // Buscar usuario
+    const usuario = await Usuario.findById(req.params.id);
+    if (!usuario) return res.status(404).json({ msg: "Usuario no encontrado" });
+
+    // Actualizar campos permitidos
+    if (nombre) usuario.nombre = nombre;
+    if (correo) usuario.correo = correo;
+    if (rol) usuario.rol = rol;
+
+    // Si el password se incluye, lo encriptamos antes de guardar
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      usuario.password = await bcrypt.hash(password, salt);
+    }
+
+    await usuario.save();
+
+    res.status(200).json({
+      msg: "Usuario actualizado correctamente",
+      usuario: {
+        _id: usuario._id,
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        rol: usuario.rol,
+      },
+    });
+  } catch (error) {
+    console.error("Error al actualizar usuario:", error);
+    res.status(500).json({ msg: "Error al actualizar usuario", error });
+  }
+};
+
+// Eliminar usuario
+export const eliminarUsuario = async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id);
+    if (!usuario) return res.status(404).json({ msg: "Usuario no encontrado" });
+
+    await usuario.deleteOne();
+    res.status(200).json({ msg: "Usuario eliminado correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar usuario:", error);
+    res.status(500).json({ msg: "Error al eliminar usuario", error });
+  }
+};
 
 //LOGIN
 export const loginUsuario = async (req, res) => {
