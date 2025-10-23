@@ -39,7 +39,7 @@ export const responderEjercicio = async (req, res) => {
         progreso,
       });
     } else {
-      // 🆕 No existe → crear nuevo
+      //No existe → crear nuevo
       progreso = new Progreso({
         usuario: req.usuario._id,
         materia: materiaId,
