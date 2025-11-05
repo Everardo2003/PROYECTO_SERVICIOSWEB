@@ -11,6 +11,6 @@ const router = express.Router();
 
 router.post("/responder", protegerRuta, responderEjercicio);
 router.get("/",protegerRuta, obtenerProgresoUsuario);
-router.get("/estadisticas", protegerRuta, obtenerEstadisticasProgreso);
+router.get("/estadisticas/", protegerRuta, obtenerEstadisticasProgreso);
 
 export default router;

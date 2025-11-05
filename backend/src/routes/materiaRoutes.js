@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/',protegerRuta, obtenerMaterias);
 
 //Acceso solo del admin
-router.post('/',protegerRuta, verificarAdmin,crearMateria);
+router.post('/agregar-materia',protegerRuta, verificarAdmin,crearMateria);
 router.delete('/:id',protegerRuta,verificarAdmin,eliminarMateria);
 router.put("/:id", protegerRuta, verificarAdmin, actualizarMateria);
 

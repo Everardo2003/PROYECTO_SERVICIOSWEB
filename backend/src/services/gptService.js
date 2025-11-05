@@ -1,6 +1,7 @@
 import Groq from 'groq-sdk';
 import dotenv from 'dotenv';
 import Materia from '../models/Materia.js';
+import preguntaGenerada from '../models/preguntaGenerada.js';
 dotenv.config();
 
 const client = new Groq({
@@ -8,47 +9,42 @@ const client = new Groq({
 });
 
 
-export const generarPreguntas = async (materiaId, temaIndex, cantidad) => {
-  // Obtener la materia de la DB
+export const generarPreguntas = async (usuarioId, materiaId, temaIndex, cantidad) => {
   const materia = await Materia.findById(materiaId);
   if (!materia) throw new Error("Materia no encontrada");
 
-  // Buscar el tema dentro de la materia
-  // temaIndex viene del body
   const tema = materia.temas[temaIndex];
   if (!tema) throw new Error("Tema no encontrado en la materia");
-
 
   const contenido = tema.subtemas.join("\n") + "\n" + tema.contenido;
 
   const prompt = `
-  Genera ${cantidad} preguntas de opción múltiple basadas en la siguiente información:
-  "${contenido}"
+Genera ${cantidad} preguntas de opción múltiple basadas en la siguiente información:
+"${contenido}"
 
-  Devuelve solo JSON válido, sin texto adicional. Ejemplo:
+Devuelve solo JSON válido, sin texto adicional. Ejemplo:
 
-  [
-    {
-      "pregunta": "...",
-      "opciones": ["op1", "op2", "op3"],
-      "respuestaCorrecta": "..."
-    }
-  ]
+[
+  {
+    "pregunta": "¿Qué es ...?",
+    "opciones": ["op1", "op2", "op3"],
+    "respuestaCorrecta": "op1"
+  }
+]
   `;
 
   try {
     const response = await client.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: "llama-3.3-70b-versatile",
       messages: [
-        { role: 'system', content: 'Eres un asistente educativo.' },
-        { role: 'user', content: prompt },
+        { role: "system", content: "Eres un asistente educativo que genera preguntas claras." },
+        { role: "user", content: prompt },
       ],
-      max_tokens: 500,
+      max_tokens: 800,
     });
 
     const texto = response.choices[0].message.content.trim();
 
-    // Parsear JSON
     let preguntas = [];
     try {
       preguntas = JSON.parse(texto);
@@ -57,27 +53,25 @@ export const generarPreguntas = async (materiaId, temaIndex, cantidad) => {
       return [];
     }
 
-    // 4️⃣ Guardar preguntas en MongoDB, evitando duplicados
-    preguntas.forEach(p => {
-      const existe = tema.ejercicios.some(e => e.pregunta === p.pregunta);
-      if (!existe) {
-        tema.ejercicios.push({
-          pregunta: p.pregunta,
-          opciones: p.opciones,
-          respuestaCorrecta: p.respuestaCorrecta
-        });
-      }
+    //Crear un nuevo documento cada vez
+    const registro = new preguntaGenerada({
+      usuario: usuarioId,
+      materia: materiaId,
+      tema: tema.nombre,
+      preguntas,
+      fechaCreacion: new Date(),
+      ultimaActualizacion: new Date(),
     });
 
-    await materia.save(); // guardar cambios en MongoDB
+    await registro.save();
 
-    return preguntas;
-
+    return registro;
   } catch (error) {
     console.error("Error generando preguntas con Groq:", error);
     throw error;
   }
 };
+
 
 
 export const generarRetroalimentacion = async ({ pregunta, respuestaUsuario, respuestaCorrecta, esCorrecta }) => {

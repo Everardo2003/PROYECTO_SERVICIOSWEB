@@ -5,6 +5,7 @@ import usuarioRoutes from './routes/usuarioRoutes.js';
 import materiaRoutes from './routes/materiaRoutes.js';
 import gptRoutes from "./routes/gptRoutes.js";
 import progresoRoutes from "./routes/progresoRoutes.js";
+import preguntaRoutes from "./routes/preguntaRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -18,6 +19,7 @@ app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/materias', materiaRoutes);
 app.use("/api/gpt", gptRoutes);
 app.use("/api/progreso", progresoRoutes);
+app.use("/api/",preguntaRoutes)
 
 // Ruta raíz
 app.get('/', (req, res) => {

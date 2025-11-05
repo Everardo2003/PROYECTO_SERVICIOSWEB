@@ -1,9 +1,25 @@
 import Progreso from "../models/Progreso.js";
 import { generarRetroalimentacion } from "../services/gptService.js";
+import PreguntasGeneradas from "../models/preguntaGenerada.js";
 
 export const responderEjercicio = async (req, res) => {
   try {
-    const { materiaId, tema, pregunta, respuestaUsuario, respuestaCorrecta } = req.body;
+    const { preguntasGeneradasId, pregunta, respuestaUsuario } = req.body;
+    const usuarioId = req.usuario._id;
+
+    // Buscar el documento de preguntas generadas
+    const registroPreguntas = await PreguntasGeneradas.findById(preguntasGeneradasId);
+    if (!registroPreguntas) {
+      return res.status(404).json({ msg: "Documento de preguntas no encontrado" });
+    }
+
+    // Buscar la pregunta dentro del documento
+    const preguntaObj = registroPreguntas.preguntas.find(p => p.pregunta === pregunta);
+    if (!preguntaObj) {
+      return res.status(404).json({ msg: "Pregunta no encontrada en el documento" });
+    }
+
+    const respuestaCorrecta = preguntaObj.respuestaCorrecta;
 
     // Verificar si la respuesta es correcta
     const esCorrecta =
@@ -17,16 +33,15 @@ export const responderEjercicio = async (req, res) => {
       esCorrecta,
     });
 
-    // Buscar si ya existe un progreso del mismo usuario, materia, tema y pregunta
+    // Buscar si ya existe un progreso para esta pregunta del usuario
     let progreso = await Progreso.findOne({
-      usuario: req.usuario._id,
-      materia: materiaId,
-      tema,
+      usuario: usuarioId,
+      preguntasGeneradas: preguntasGeneradasId,
       pregunta,
     });
 
     if (progreso) {
-      // Ya existe → actualizar
+      // Actualizar respuesta existente
       progreso.respuestaUsuario = respuestaUsuario;
       progreso.esCorrecta = esCorrecta;
       progreso.retroalimentacion = retroalimentacion;
@@ -39,11 +54,12 @@ export const responderEjercicio = async (req, res) => {
         progreso,
       });
     } else {
-      //No existe → crear nuevo
+      // Crear nuevo progreso
       progreso = new Progreso({
-        usuario: req.usuario._id,
-        materia: materiaId,
-        tema,
+        usuario: usuarioId,
+        preguntasGeneradas: preguntasGeneradasId,
+        materia: registroPreguntas.materia,
+        tema: registroPreguntas.tema,
         pregunta,
         respuestaUsuario,
         esCorrecta,
@@ -109,40 +125,50 @@ export const obtenerEstadisticasProgreso = async (req, res) => {
   try {
     const usuarioId = req.usuario._id;
 
-    const progresos = await Progreso.find({ usuario: usuarioId }).populate("materia", "nombre");
+    const documentos = await PreguntasGeneradas.find({ usuario: usuarioId })
+      .populate("materia", "nombre");
 
-    if (!progresos.length) {
-      return res.status(404).json({ msg: "No hay progreso registrado aún" });
-    }
+    if (!documentos.length)
+      return res.status(404).json({ msg: "No hay preguntas generadas aún" });
 
     const estadisticas = {};
 
-    progresos.forEach((p) => {
-      const materia = p.materia.nombre;
-      const tema = p.tema;
+    for (const doc of documentos) {
+      const docId = doc._id.toString();
+      const materia = doc.materia.nombre;
+      const tema = doc.tema;
 
       if (!estadisticas[materia]) estadisticas[materia] = {};
-      if (!estadisticas[materia][tema])
-        estadisticas[materia][tema] = { respondidas: 0, correctas: 0, porcentaje: 0 };
+      if (!estadisticas[materia][tema]) estadisticas[materia][tema] = {};
 
-      estadisticas[materia][tema].respondidas += 1;
-      if (p.esCorrecta) estadisticas[materia][tema].correctas += 1;
-    });
+      const totalPreguntas = doc.preguntas.length;
 
-    // Calcular porcentaje
-    for (const materia in estadisticas) {
-      for (const tema in estadisticas[materia]) {
-        const { respondidas, correctas } = estadisticas[materia][tema];
-        estadisticas[materia][tema].porcentaje = Math.round((correctas / respondidas) * 100);
-      }
+      // Buscar progresos relacionados a este documento
+      const progresos = await Progreso.find({
+        usuario: usuarioId,
+        preguntasGeneradas: doc._id, // <-- campo que debes agregar en Progreso
+      });
+
+      const respondidas = progresos.filter(p => p.respuestaUsuario).length;
+      const correctas = progresos.filter(p => p.esCorrecta).length;
+
+      estadisticas[materia][tema][docId] = {
+        totalPreguntas,
+        respondidas,
+        correctas,
+        progreso: Math.round((correctas / totalPreguntas) * 100),
+        porcentajeAciertos: respondidas
+          ? Math.round((correctas / respondidas) * 100)
+          : 0,
+      };
     }
 
     res.status(200).json({
-      msg: "Estadísticas de progreso obtenidas correctamente",
+      msg: "Estadísticas por documento obtenidas correctamente",
       estadisticas,
     });
   } catch (error) {
-    console.error("Error al obtener estadísticas:", error);
-    res.status(500).json({ msg: "Error al obtener estadísticas de progreso", error });
+    console.error(error);
+    res.status(500).json({ msg: "Error al obtener estadísticas", error });
   }
 };
