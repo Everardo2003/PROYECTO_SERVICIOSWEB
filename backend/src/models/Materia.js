@@ -6,10 +6,16 @@ const ejercicioSchema = new mongoose.Schema({
   respuestaCorrecta: String,
 });
 
+//  Nuevo: cada subtema tiene su propio nombre y contenido
+const subtemaSchema = new mongoose.Schema({
+  nombre: String,
+  contenido: String,
+});
+
 const temaSchema = new mongoose.Schema({
   nombre: String,
-  subtemas: [String],
-  contenido: String,
+  subtemas: [subtemaSchema], // Ahora es un array de objetos, no solo strings
+  contenido: String, // contenido general del tema
   ejercicios: [ejercicioSchema],
 });
 

@@ -2,7 +2,8 @@ import express from "express";
 import {
   responderEjercicio,
   obtenerProgresoUsuario,
-  obtenerEstadisticasProgreso
+  obtenerEstadisticasProgreso,
+  responderEjercicioMateria
 } from "../controllers/progresoController.js";
 import { protegerRuta } from "../middlewares/authMiddleware.js";
 
@@ -10,6 +11,7 @@ import { protegerRuta } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.post("/responder", protegerRuta, responderEjercicio);
+router.post("/ejercicio",protegerRuta, responderEjercicioMateria);
 router.get("/",protegerRuta, obtenerProgresoUsuario);
 router.get("/estadisticas/", protegerRuta, obtenerEstadisticasProgreso);
 

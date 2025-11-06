@@ -18,7 +18,7 @@ const progresoSchema = new mongoose.Schema({
   preguntasGeneradas: { // 🔹 relaciona con el documento generado
     type: mongoose.Schema.Types.ObjectId,
     ref: "PreguntasGeneradas",
-    required: true,
+    required: false,
   },
   pregunta: {
     type: String, // texto de la pregunta

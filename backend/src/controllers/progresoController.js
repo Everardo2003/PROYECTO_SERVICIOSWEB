@@ -1,6 +1,7 @@
 import Progreso from "../models/Progreso.js";
 import { generarRetroalimentacion } from "../services/gptService.js";
 import PreguntasGeneradas from "../models/preguntaGenerada.js";
+import Materia from "../models/Materia.js";
 
 export const responderEjercicio = async (req, res) => {
   try {
@@ -170,5 +171,87 @@ export const obtenerEstadisticasProgreso = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Error al obtener estadísticas", error });
+  }
+};
+export const responderEjercicioMateria = async (req, res) => {
+  try {
+    const { materiaId, temaNombre, pregunta, respuestaUsuario } = req.body;
+    const usuarioId = req.usuario._id;
+
+    // 1️⃣ Buscar la materia
+    const materia = await Materia.findById(materiaId);
+    if (!materia) {
+      return res.status(404).json({ msg: "Materia no encontrada" });
+    }
+
+    // 2️⃣ Buscar el tema dentro de la materia
+    const tema = materia.temas.find(t => t.nombre === temaNombre);
+    if (!tema) {
+      return res.status(404).json({ msg: "Tema no encontrado en la materia" });
+    }
+
+    // 3️⃣ Buscar el ejercicio por su pregunta
+    const ejercicio = tema.ejercicios.find(e => e.pregunta === pregunta);
+    if (!ejercicio) {
+      return res.status(404).json({ msg: "Ejercicio no encontrado en el tema" });
+    }
+
+    const respuestaCorrecta = ejercicio.respuestaCorrecta;
+
+    // 4️⃣ Verificar si la respuesta es correcta
+    const esCorrecta =
+      respuestaUsuario.trim().toLowerCase() === respuestaCorrecta.trim().toLowerCase();
+
+    // 5️⃣ Generar retroalimentación con Groq
+    const retroalimentacion = await generarRetroalimentacion({
+      pregunta,
+      respuestaUsuario,
+      respuestaCorrecta,
+      esCorrecta,
+    });
+
+    // 6️⃣ Buscar si ya existe un progreso guardado para este ejercicio
+    let progreso = await Progreso.findOne({
+      usuario: usuarioId,
+      materia: materiaId,
+      tema: temaNombre,
+      pregunta,
+    });
+
+    if (progreso) {
+      // Actualizar el progreso existente
+      progreso.respuestaUsuario = respuestaUsuario;
+      progreso.esCorrecta = esCorrecta;
+      progreso.retroalimentacion = retroalimentacion;
+      progreso.fechaUltimoAvance = new Date();
+
+      await progreso.save();
+
+      return res.status(200).json({
+        msg: "Progreso actualizado correctamente",
+        progreso,
+      });
+    } else {
+      // Crear nuevo progreso
+      progreso = new Progreso({
+        usuario: usuarioId,
+        materia: materiaId,
+        tema: temaNombre,
+        pregunta,
+        respuestaUsuario,
+        esCorrecta,
+        retroalimentacion,
+      });
+
+      await progreso.save();
+
+      return res.status(201).json({
+        msg: "Progreso guardado correctamente",
+        progreso,
+      });
+    }
+  } catch (error) {
+    console.error("Error procesando respuesta de ejercicio:", error);
+    res.status(500).json({ msg: "Error al procesar respuesta del ejercicio", error });
   }
 };

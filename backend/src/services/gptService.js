@@ -74,24 +74,63 @@ Devuelve solo JSON válido, sin texto adicional. Ejemplo:
 
 
 
-export const generarRetroalimentacion = async ({ pregunta, respuestaUsuario, respuestaCorrecta, esCorrecta }) => {
+export const generarRetroalimentacion = async ({
+  pregunta,
+  respuestaUsuario,
+  respuestaCorrecta,
+  esCorrecta,
+}) => {
   try {
-    const prompt = `
-Eres un profesor de programación. 
-Evalúa la siguiente respuesta de un estudiante:
+    // Detectamos si es un ejercicio de programación o una pregunta con opciones
+    const esEjercicioCodigo =
+      pregunta.toLowerCase().includes("programa") ||
+      pregunta.toLowerCase().includes("algoritmo") ||
+      pregunta.toLowerCase().includes("función") ||
+      respuestaUsuario?.includes("function") ||
+      respuestaUsuario?.includes("if") ||
+      respuestaUsuario?.includes("while") ||
+      respuestaUsuario?.includes("for");
+
+    let prompt;
+
+    if (esEjercicioCodigo) {
+      // 🧠 Caso: ejercicio de programación
+      prompt = `
+Eres un profesor de programación. Evalúa la siguiente respuesta de un estudiante:
+
+Ejercicio: ${pregunta}
+Código del estudiante:
+${respuestaUsuario}
+
+Compara con la solución esperada (si aplica):
+${respuestaCorrecta || "No hay una respuesta exacta, solo evalúa la lógica."}
+
+Indica si la respuesta es correcta: ${esCorrecta ? "Sí" : "No"}.
+Da una retroalimentación **breve (máx 3 líneas)** enfocada en:
+- Qué hizo bien.
+- Qué podría mejorar.
+      `;
+    } else {
+      // 📘 Caso: pregunta de opción múltiple o texto corto
+      prompt = `
+Eres un profesor de programación. Evalúa la siguiente respuesta de un estudiante:
+
 Pregunta: ${pregunta}
 Respuesta del estudiante: ${respuestaUsuario}
 Respuesta correcta: ${respuestaCorrecta}
 ¿La respuesta es correcta?: ${esCorrecta ? "Sí" : "No"}
-Da una retroalimentación corta y educativa (máx 2 líneas).
-`;
+
+Da una retroalimentación breve y educativa (máx 2 líneas), enfocada en reforzar el aprendizaje.
+      `;
+    }
 
     const response = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
+      max_tokens: 150,
     });
 
-    return response.choices[0].message.content;
+    return response.choices[0].message.content.trim();
   } catch (error) {
     console.error("Error generando retroalimentación con Groq:", error);
     return "No se pudo generar retroalimentación en este momento.";
