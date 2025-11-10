@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from "cors";
 import { connectDB } from './config/db.js';
 import usuarioRoutes from './routes/usuarioRoutes.js';
 import materiaRoutes from './routes/materiaRoutes.js';
@@ -13,6 +14,13 @@ app.use(express.json());
 
 // Conectar con MongoDB 
 connectDB();
+
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Rutas base
 app.use('/api/usuarios', usuarioRoutes);

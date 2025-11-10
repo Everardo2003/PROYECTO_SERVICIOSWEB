@@ -103,11 +103,29 @@ export const loginUsuario = async (req, res) => {
         id: usuario._id,
         nombre: usuario.nombre,
         correo: usuario.correo,
+        rol: usuario.rol
       }
     });
   } catch (error) {
     console.error('Error en loginUsuario:', error);
     res.status(500).json({ msg: 'Error en el login', error: error.message });
+  }
+};
+
+export const obtenerUsuarioPorId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const usuario = await Usuario.findById(id);
+
+    if (!usuario) {
+      return res.status(404).json({ msg: "Usuario no encontrado" });
+    }
+
+    res.status(200).json(usuario);
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    res.status(500).json({ msg: "Error al obtener usuario", error });
   }
 };
 
