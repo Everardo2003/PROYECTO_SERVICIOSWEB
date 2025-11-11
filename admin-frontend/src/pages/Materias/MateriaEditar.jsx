@@ -44,36 +44,59 @@ const MateriaEditar = () => {
     cargarMateria();
   }, [id, navigate]);
 
-  // Handlers
+  // Cambiar valores de campos principales
   const handleChange = (e) =>
     setMateria({ ...materia, [e.target.name]: e.target.value });
 
+  // Cambiar valores dentro de un tema
   const handleTemaChange = (i, e) => {
     const nuevos = [...materia.temas];
     nuevos[i][e.target.name] = e.target.value;
     setMateria({ ...materia, temas: nuevos });
   };
 
+  // Cambiar valores dentro de un subtema
+  const handleSubtemaChange = (temaIndex, subtemaIndex, e) => {
+    const nuevos = [...materia.temas];
+    nuevos[temaIndex].subtemas[subtemaIndex][e.target.name] = e.target.value;
+    setMateria({ ...materia, temas: nuevos });
+  };
+
+  // Cambiar valores dentro de un ejercicio
+  const handleEjercicioChange = (temaIndex, ejercicioIndex, e) => {
+    const nuevos = [...materia.temas];
+    nuevos[temaIndex].ejercicios[ejercicioIndex][e.target.name] =
+      e.target.value;
+    setMateria({ ...materia, temas: nuevos });
+  };
+
+  // Agregar tema
   const agregarTema = () => {
     setMateria({
       ...materia,
-      temas: [...materia.temas, { nombre: "", contenido: "", subtemas: [], ejercicios: [] }],
+      temas: [
+        ...materia.temas,
+        { nombre: "", contenido: "", subtemas: [], ejercicios: [] },
+      ],
     });
     setTimeout(() => temaRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
+  // Eliminar tema
   const eliminarTema = (i) => {
-    if (confirm("¿seguro de eliminar este tema?")) {
+    if (confirm("¿Seguro de eliminar este tema?")) {
       setMateria({ ...materia, temas: materia.temas.filter((_, x) => x !== i) });
     }
   };
 
+  // Agregar subtema
   const agregarSubtema = (i) => {
     const nuevos = [...materia.temas];
     nuevos[i].subtemas.push({ nombre: "", contenido: "" });
     setMateria({ ...materia, temas: nuevos });
   };
 
+  // Eliminar subtema
   const eliminarSubtema = (ti, si) => {
     if (confirm("¿Seguro de eliminar este subtema?")) {
       const nuevos = [...materia.temas];
@@ -82,20 +105,23 @@ const MateriaEditar = () => {
     }
   };
 
+  // Agregar ejercicio
   const agregarEjercicio = (i) => {
     const nuevos = [...materia.temas];
     nuevos[i].ejercicios.push({ pregunta: "" });
     setMateria({ ...materia, temas: nuevos });
   };
 
+  // Eliminar ejercicio
   const eliminarEjercicio = (ti, ei) => {
-    if (confirm("¿Segur de eliminar este ejercicio?")) {
+    if (confirm("¿Seguro de eliminar este ejercicio?")) {
       const nuevos = [...materia.temas];
       nuevos[ti].ejercicios = nuevos[ti].ejercicios.filter((_, x) => x !== ei);
       setMateria({ ...materia, temas: nuevos });
     }
   };
 
+  // Guardar cambios
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -115,7 +141,7 @@ const MateriaEditar = () => {
       alert("Materia actualizada correctamente");
       navigate("/dashboard/materias");
     } catch (error) {
-      console.error("❌ Error al actualizar:", error);
+      console.error("Error al actualizar:", error);
       setMensaje("Error al actualizar la materia.");
     }
   };
