@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [cargando, setCargando] = useState(true);
 
+  // Cargar sesión desde AsyncStorage al iniciar la app
   useEffect(() => {
     verificarSesion();
   }, []);
@@ -15,7 +16,11 @@ export const AuthProvider = ({ children }) => {
   const verificarSesion = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      if (token) setUser({ token });
+      const storedUser = await AsyncStorage.getItem("user");
+
+      if (token && storedUser) {
+        setUser(JSON.parse(storedUser)); // Usuario completo
+      }
     } catch (e) {
       console.log("Error verificando sesión:", e);
     }
@@ -24,29 +29,35 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (correo, password) => {
     try {
-      const res = await api.post("/usuarios/login", {
-        correo,
-        password,
-      });
+      const res = await api.post("/usuarios/login", { correo, password });
 
       const token = res.data.token;
-      await AsyncStorage.setItem("token", token);
+      const usuario = res.data.usuario; // EL BACKEND DEBE MANDARLO
 
-      setUser(res.data.usuario);
+      // Guardar token y usuario
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(usuario));
+
+      setUser(usuario);
+
       return { ok: true };
     } catch (error) {
-      console.log(error.response?.data || error);
-      return { ok: false, msg: error.response?.data?.msg || "Error al iniciar sesión" };
+      console.log("Error login:", error.response?.data || error);
+      return {
+        ok: false,
+        msg: error.response?.data?.msg || "Error al iniciar sesión",
+      };
     }
   };
 
   const logout = async () => {
     await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, cargando }}>
+    <AuthContext.Provider value={{ user, login, logout, cargando, setUser }}>
       {children}
     </AuthContext.Provider>
   );

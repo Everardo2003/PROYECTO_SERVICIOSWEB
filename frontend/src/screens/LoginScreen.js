@@ -11,7 +11,7 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     const res = await login(correo, password);
-
+    
     if (!res.ok) {
       setError(res.msg);
     }

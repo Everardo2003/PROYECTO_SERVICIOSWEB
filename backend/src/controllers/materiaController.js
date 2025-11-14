@@ -67,7 +67,7 @@ export const actualizarMateria = async (req, res) => {
     await materia.save();
 
     res.status(200).json({
-      msg: "✅ Materia actualizada correctamente",
+      msg: "Materia actualizada correctamente",
       materia,
     });
   } catch (error) {

@@ -7,7 +7,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido, {user?.nombre || "Estudiante"} </Text>
+      <Text style={styles.title}>Bienvenido, {user?.nombre} </Text>
 
       {/* MENÚ PRINCIPAL */}
       <View style={styles.menuContainer}>
