@@ -31,7 +31,7 @@ const UsuariosLista = () => {
 
   return (
     <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
-      <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-6">
+      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
           <h2 className="text-2xl font-bold text-gray-800">Lista de Usuarios</h2>
           <Link
@@ -48,13 +48,14 @@ const UsuariosLista = () => {
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse text-sm sm:text-base">
               <thead>
                 <tr className="bg-gray-800 text-white text-left">
                   <th className="p-3">Nombre</th>
                   <th className="p-3">Correo</th>
                   <th className="p-3">Rol</th>
                   <th className="p-3 text-center">Acciones</th>
+                  <th className="p-3 text-center">Progreso</th> {/* 🔹 Nueva columna */}
                 </tr>
               </thead>
               <tbody>
@@ -81,6 +82,20 @@ const UsuariosLista = () => {
                       >
                         Eliminar
                       </button>
+                    </td>
+
+                    {/* 🔹 Botón para ver progreso solo si es estudiante */}
+                    <td className="p-3 text-center">
+                      {u.rol === "estudiante" ? (
+                        <Link
+                          to={`/dashboard/usuarios/progreso/${u._id}`}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded transition"
+                        >
+                          Ver progreso
+                        </Link>
+                      ) : (
+                        <span className="text-gray-400 italic">USUARIO ADMIN</span>
+                      )}
                     </td>
                   </tr>
                 ))}

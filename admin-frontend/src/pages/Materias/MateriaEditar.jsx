@@ -44,59 +44,58 @@ const MateriaEditar = () => {
     cargarMateria();
   }, [id, navigate]);
 
-  // Cambiar valores de campos principales
+  // 🔹 Cambios generales
   const handleChange = (e) =>
     setMateria({ ...materia, [e.target.name]: e.target.value });
 
-  // Cambiar valores dentro de un tema
+  // 🔹 Cambiar valores dentro de un tema
   const handleTemaChange = (i, e) => {
     const nuevos = [...materia.temas];
     nuevos[i][e.target.name] = e.target.value;
     setMateria({ ...materia, temas: nuevos });
   };
 
-  // Cambiar valores dentro de un subtema
-  const handleSubtemaChange = (temaIndex, subtemaIndex, e) => {
+  // 🔹 Cambiar valores dentro de un subtema
+  const handleSubtemaChange = (ti, si, e) => {
     const nuevos = [...materia.temas];
-    nuevos[temaIndex].subtemas[subtemaIndex][e.target.name] = e.target.value;
+    nuevos[ti].subtemas[si][e.target.name] = e.target.value;
     setMateria({ ...materia, temas: nuevos });
   };
 
-  // Cambiar valores dentro de un ejercicio
-  const handleEjercicioChange = (temaIndex, ejercicioIndex, e) => {
+  // 🔹 Cambiar valores dentro de un ejercicio de subtema
+  const handleEjercicioChange = (ti, si, ei, e) => {
     const nuevos = [...materia.temas];
-    nuevos[temaIndex].ejercicios[ejercicioIndex][e.target.name] =
-      e.target.value;
+    nuevos[ti].subtemas[si].ejercicios[ei][e.target.name] = e.target.value;
     setMateria({ ...materia, temas: nuevos });
   };
 
-  // Agregar tema
+  // 🔹 Agregar tema
   const agregarTema = () => {
     setMateria({
       ...materia,
       temas: [
         ...materia.temas,
-        { nombre: "", contenido: "", subtemas: [], ejercicios: [] },
+        { nombre: "", contenido: "", subtemas: [] },
       ],
     });
     setTimeout(() => temaRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
-  // Eliminar tema
+  // 🔹 Eliminar tema
   const eliminarTema = (i) => {
     if (confirm("¿Seguro de eliminar este tema?")) {
       setMateria({ ...materia, temas: materia.temas.filter((_, x) => x !== i) });
     }
   };
 
-  // Agregar subtema
+  // 🔹 Agregar subtema
   const agregarSubtema = (i) => {
     const nuevos = [...materia.temas];
-    nuevos[i].subtemas.push({ nombre: "", contenido: "" });
+    nuevos[i].subtemas.push({ nombre: "", contenido: "", ejercicios: [] });
     setMateria({ ...materia, temas: nuevos });
   };
 
-  // Eliminar subtema
+  // 🔹 Eliminar subtema
   const eliminarSubtema = (ti, si) => {
     if (confirm("¿Seguro de eliminar este subtema?")) {
       const nuevos = [...materia.temas];
@@ -105,23 +104,29 @@ const MateriaEditar = () => {
     }
   };
 
-  // Agregar ejercicio
-  const agregarEjercicio = (i) => {
+  // 🔹 Agregar ejercicio a un subtema
+  const agregarEjercicio = (ti, si) => {
     const nuevos = [...materia.temas];
-    nuevos[i].ejercicios.push({ pregunta: "" });
+    nuevos[ti].subtemas[si].ejercicios.push({
+      pregunta: "",
+      opciones: [],
+      respuestaCorrecta: "",
+    });
     setMateria({ ...materia, temas: nuevos });
   };
 
-  // Eliminar ejercicio
-  const eliminarEjercicio = (ti, ei) => {
+  // 🔹 Eliminar ejercicio de subtema
+  const eliminarEjercicio = (ti, si, ei) => {
     if (confirm("¿Seguro de eliminar este ejercicio?")) {
       const nuevos = [...materia.temas];
-      nuevos[ti].ejercicios = nuevos[ti].ejercicios.filter((_, x) => x !== ei);
+      nuevos[ti].subtemas[si].ejercicios = nuevos[ti].subtemas[si].ejercicios.filter(
+        (_, x) => x !== ei
+      );
       setMateria({ ...materia, temas: nuevos });
     }
   };
 
-  // Guardar cambios
+  // 🔹 Guardar cambios
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -162,9 +167,7 @@ const MateriaEditar = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Nombre */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">
-              Nombre
-            </label>
+            <label className="block text-gray-700 font-semibold mb-1">Nombre</label>
             <input
               type="text"
               name="nombre"
@@ -177,9 +180,7 @@ const MateriaEditar = () => {
 
           {/* Descripción */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-1">
-              Descripción
-            </label>
+            <label className="block text-gray-700 font-semibold mb-1">Descripción</label>
             <textarea
               name="descripcion"
               rows="3"
@@ -201,12 +202,9 @@ const MateriaEditar = () => {
             </button>
           </div>
 
-          <div ref={temaRef} className="space-y-4 mt-4">
+          <div ref={temaRef} className="space-y-6 mt-4">
             {materia.temas.map((tema, i) => (
-              <div
-                key={i}
-                className="border border-gray-200 rounded-xl p-4 bg-gray-50 shadow-sm"
-              >
+              <div key={i} className="border border-gray-200 rounded-xl p-5 bg-gray-50 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="font-semibold text-gray-700">
                     Tema {i + 1}: {tema.nombre || "Sin título"}
@@ -214,12 +212,13 @@ const MateriaEditar = () => {
                   <button
                     type="button"
                     onClick={() => eliminarTema(i)}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md transition"
+                    className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md"
                   >
                     Eliminar
                   </button>
                 </div>
 
+                {/* Nombre y contenido del tema */}
                 <input
                   type="text"
                   name="nombre"
@@ -238,30 +237,31 @@ const MateriaEditar = () => {
                 />
 
                 {/* Subtemas */}
-                <div className="mb-4">
-                  <h5 className="text-gray-700 font-medium mb-2">Subtemas</h5>
+                <div className="space-y-4">
+                  <h5 className="text-gray-700 font-medium">Subtemas</h5>
                   {tema.subtemas.map((sub, si) => (
                     <div
                       key={si}
-                      className="bg-white border border-gray-200 rounded-lg p-3 mb-2"
+                      className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
                     >
-                      <div className="flex justify-between items-center mb-1">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">
-                          Subtema {si + 1}
+                          Subtema {si + 1}: {sub.nombre || "Sin título"}
                         </span>
                         <button
                           type="button"
                           onClick={() => eliminarSubtema(i, si)}
-                          className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5 rounded transition"
+                          className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-md"
                         >
                           X
                         </button>
                       </div>
+
                       <input
                         type="text"
                         name="nombre"
                         placeholder="Nombre del subtema"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-1 mb-2"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-1"
                         value={sub.nombre}
                         onChange={(e) => handleSubtemaChange(i, si, e)}
                       />
@@ -273,6 +273,45 @@ const MateriaEditar = () => {
                         value={sub.contenido}
                         onChange={(e) => handleSubtemaChange(i, si, e)}
                       />
+
+                      {/* Ejercicios dentro del subtema */}
+                      <div className="pl-2 border-l-4 border-blue-500 mt-3">
+                        <h6 className="text-gray-700 font-medium mb-2">Ejercicios</h6>
+                        {sub.ejercicios?.map((ej, ei) => (
+                          <div
+                            key={ei}
+                            className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2"
+                          >
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm text-gray-600">
+                                Ejercicio {ei + 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => eliminarEjercicio(i, si, ei)}
+                                className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5 rounded"
+                              >
+                                X
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              name="pregunta"
+                              placeholder="Pregunta"
+                              className="w-full border border-gray-300 rounded-lg px-3 py-1"
+                              value={ej.pregunta}
+                              onChange={(e) => handleEjercicioChange(i, si, ei, e)}
+                            />
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => agregarEjercicio(i, si)}
+                          className="text-blue-600 hover:underline text-sm font-medium"
+                        >
+                          + Agregar Ejercicio
+                        </button>
+                      </div>
                     </div>
                   ))}
                   <button
@@ -283,53 +322,15 @@ const MateriaEditar = () => {
                     + Agregar Subtema
                   </button>
                 </div>
-
-                {/* Ejercicios */}
-                <div>
-                  <h5 className="text-gray-700 font-medium mb-2">Ejercicios</h5>
-                  {tema.ejercicios.map((ej, ei) => (
-                    <div
-                      key={ei}
-                      className="bg-white border border-gray-200 rounded-lg p-3 mb-2"
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm text-gray-600">
-                          Ejercicio {ei + 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => eliminarEjercicio(i, ei)}
-                          className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5 rounded transition"
-                        >
-                          X
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        name="pregunta"
-                        placeholder="Pregunta"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-1"
-                        value={ej.pregunta}
-                        onChange={(e) => handleEjercicioChange(i, ei, e)}
-                      />
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => agregarEjercicio(i)}
-                    className="text-blue-600 hover:underline text-sm font-medium"
-                  >
-                    + Agregar Ejercicio
-                  </button>
-                </div>
               </div>
             ))}
           </div>
 
+          {/* Guardar */}
           <div className="text-center mt-6">
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-md transition"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-md"
             >
               Guardar Cambios
             </button>

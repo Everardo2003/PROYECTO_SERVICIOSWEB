@@ -15,6 +15,10 @@ const progresoSchema = new mongoose.Schema({
     type: String, // nombre del tema
     required: true,
   },
+  subtema: {
+    type: String, // 🔹 nombre del subtema (nuevo campo)
+    required: false,
+  },
   preguntasGeneradas: { // 🔹 relaciona con el documento generado
     type: mongoose.Schema.Types.ObjectId,
     ref: "PreguntasGeneradas",

@@ -6,7 +6,7 @@ import { verificarAdmin } from '../middlewares/adminMiddleware.js';
 const router = express.Router();
 
 //Acceso general
-router.post('/',protegerRuta,registrarUsuario);
+router.post('/',registrarUsuario);
 router.post('/login', loginUsuario); 
 
 //Acceso admin

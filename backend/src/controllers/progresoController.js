@@ -82,28 +82,37 @@ export const responderEjercicio = async (req, res) => {
 
 export const obtenerProgresoUsuario = async (req, res) => {
   try {
-    const usuarioId = req.usuario._id;
+    const { id } = req.params;
 
-    // Buscar todos los progresos del usuario, ordenados por materia y tema
-    const progresos = await Progreso.find({ usuario: usuarioId })
-      .populate("materia", "nombre") // trae el nombre de la materia
+    const progresos = await Progreso.find({ usuario: id })
+      .populate("usuario", "nombre correo") // 🔹 Agregado
+      .populate("materia", "nombre")
+      .populate("preguntasGeneradas")
       .sort({ fechaUltimoAvance: -1 });
 
     if (!progresos.length) {
-      return res.status(404).json({ msg: "No hay progreso registrado aún" });
+      return res.status(200).json({
+        usuario: null,
+        progreso: [],
+      });
     }
 
-    // Agrupar por materia y tema
     const agrupado = {};
 
     progresos.forEach((p) => {
-      const materia = p.materia.nombre;
-      const tema = p.tema;
+      const materia = p.materia?.nombre || "Sin materia";
+      const tema = p.tema || "Sin tema";
+      const subtema = p.subtema
+        ? p.subtema
+        : p.preguntasGeneradas
+        ? "Preguntas generadas por la IA"
+        : "Sin subtema";
 
       if (!agrupado[materia]) agrupado[materia] = {};
-      if (!agrupado[materia][tema]) agrupado[materia][tema] = [];
+      if (!agrupado[materia][tema]) agrupado[materia][tema] = {};
+      if (!agrupado[materia][tema][subtema]) agrupado[materia][tema][subtema] = [];
 
-      agrupado[materia][tema].push({
+      agrupado[materia][tema][subtema].push({
         pregunta: p.pregunta,
         respuestaUsuario: p.respuestaUsuario,
         esCorrecta: p.esCorrecta,
@@ -112,15 +121,19 @@ export const obtenerProgresoUsuario = async (req, res) => {
       });
     });
 
-    res.status(200).json({
-      msg: "Progreso obtenido correctamente",
-      progreso: agrupado,
-    });
+    // 🔹 Tomamos los datos del usuario desde el primer progreso
+    const usuario = {
+      nombre: progresos[0].usuario?.nombre || "Desconocido",
+      correo: progresos[0].usuario?.correo || "",
+    };
+
+    res.status(200).json({ usuario, progreso: agrupado });
   } catch (error) {
     console.error("Error al obtener progreso:", error);
     res.status(500).json({ msg: "Error al obtener progreso", error });
   }
 };
+
 
 export const obtenerEstadisticasProgreso = async (req, res) => {
   try {
@@ -173,9 +186,10 @@ export const obtenerEstadisticasProgreso = async (req, res) => {
     res.status(500).json({ msg: "Error al obtener estadísticas", error });
   }
 };
+
 export const responderEjercicioMateria = async (req, res) => {
   try {
-    const { materiaId, temaNombre, pregunta, respuestaUsuario } = req.body;
+    const { materiaId, temaNombre, subtemaNombre, pregunta, respuestaUsuario } = req.body;
     const usuarioId = req.usuario._id;
 
     // 1️⃣ Buscar la materia
@@ -185,24 +199,30 @@ export const responderEjercicioMateria = async (req, res) => {
     }
 
     // 2️⃣ Buscar el tema dentro de la materia
-    const tema = materia.temas.find(t => t.nombre === temaNombre);
+    const tema = materia.temas.find((t) => t.nombre === temaNombre);
     if (!tema) {
       return res.status(404).json({ msg: "Tema no encontrado en la materia" });
     }
 
-    // 3️⃣ Buscar el ejercicio por su pregunta
-    const ejercicio = tema.ejercicios.find(e => e.pregunta === pregunta);
+    // 3️⃣ Buscar el subtema dentro del tema
+    const subtema = tema.subtemas.find((s) => s.nombre === subtemaNombre);
+    if (!subtema) {
+      return res.status(404).json({ msg: "Subtema no encontrado en el tema" });
+    }
+
+    // 4️⃣ Buscar el ejercicio dentro del subtema
+    const ejercicio = subtema.ejercicios?.find((e) => e.pregunta === pregunta);
     if (!ejercicio) {
-      return res.status(404).json({ msg: "Ejercicio no encontrado en el tema" });
+      return res.status(404).json({ msg: "Ejercicio no encontrado en el subtema" });
     }
 
     const respuestaCorrecta = ejercicio.respuestaCorrecta;
 
-    // 4️⃣ Verificar si la respuesta es correcta
+    // 5️⃣ Verificar si la respuesta es correcta
     const esCorrecta =
       respuestaUsuario.trim().toLowerCase() === respuestaCorrecta.trim().toLowerCase();
 
-    // 5️⃣ Generar retroalimentación con Groq
+    // 6️⃣ Generar retroalimentación con Groq (si tienes esa función)
     const retroalimentacion = await generarRetroalimentacion({
       pregunta,
       respuestaUsuario,
@@ -210,48 +230,32 @@ export const responderEjercicioMateria = async (req, res) => {
       esCorrecta,
     });
 
-    // 6️⃣ Buscar si ya existe un progreso guardado para este ejercicio
-    let progreso = await Progreso.findOne({
-      usuario: usuarioId,
-      materia: materiaId,
-      tema: temaNombre,
-      pregunta,
-    });
-
-    if (progreso) {
-      // Actualizar el progreso existente
-      progreso.respuestaUsuario = respuestaUsuario;
-      progreso.esCorrecta = esCorrecta;
-      progreso.retroalimentacion = retroalimentacion;
-      progreso.fechaUltimoAvance = new Date();
-
-      await progreso.save();
-
-      return res.status(200).json({
-        msg: "Progreso actualizado correctamente",
-        progreso,
-      });
-    } else {
-      // Crear nuevo progreso
-      progreso = new Progreso({
+    // 7️⃣ Actualizar o crear el progreso
+    const progreso = await Progreso.findOneAndUpdate(
+      {
         usuario: usuarioId,
         materia: materiaId,
         tema: temaNombre,
+        subtema: subtemaNombre,
         pregunta,
+      },
+      {
         respuestaUsuario,
         esCorrecta,
         retroalimentacion,
-      });
+        fechaUltimoAvance: new Date(),
+        $setOnInsert: { fechaInicio: new Date() }, // solo si es nuevo
+      },
+      { new: true, upsert: true } // 🔹 crea si no existe
+    );
 
-      await progreso.save();
-
-      return res.status(201).json({
-        msg: "Progreso guardado correctamente",
-        progreso,
-      });
-    }
+    res.status(200).json({
+      msg: "Progreso guardado o actualizado correctamente",
+      progreso,
+    });
   } catch (error) {
     console.error("Error procesando respuesta de ejercicio:", error);
     res.status(500).json({ msg: "Error al procesar respuesta del ejercicio", error });
   }
 };
+

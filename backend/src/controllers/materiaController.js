@@ -29,7 +29,6 @@ export const eliminarMateria = async (req, res) => {
   }
 };
 
-//Actualizar materia
 export const actualizarMateria = async (req, res) => {
   const { id } = req.params;
   const { nombre, descripcion, temas } = req.body;
@@ -40,22 +39,43 @@ export const actualizarMateria = async (req, res) => {
       return res.status(404).json({ msg: "Materia no encontrada" });
     }
 
+    // Actualizar campos básicos
     materia.nombre = nombre ?? materia.nombre;
     materia.descripcion = descripcion ?? materia.descripcion;
 
+    // 🔹 Validar y actualizar estructura anidada de temas
     if (Array.isArray(temas)) {
-      materia.temas = temas; // 🔹 reemplaza toda la lista
+      materia.temas = temas.map((tema) => ({
+        nombre: tema.nombre ?? "",
+        contenido: tema.contenido ?? "",
+        subtemas: Array.isArray(tema.subtemas)
+          ? tema.subtemas.map((sub) => ({
+              nombre: sub.nombre ?? "",
+              contenido: sub.contenido ?? "",
+              ejercicios: Array.isArray(sub.ejercicios)
+                ? sub.ejercicios.map((ej) => ({
+                    pregunta: ej.pregunta ?? "",
+                    opciones: ej.opciones ?? [],
+                    respuestaCorrecta: ej.respuestaCorrecta ?? "",
+                  }))
+                : [],
+            }))
+          : [],
+      }));
     }
 
     await materia.save();
 
     res.status(200).json({
-      msg: "Materia actualizada correctamente",
+      msg: "✅ Materia actualizada correctamente",
       materia,
     });
   } catch (error) {
     console.error("Error actualizando materia:", error);
-    res.status(500).json({ msg: "Error al actualizar materia", error });
+    res.status(500).json({
+      msg: "Error al actualizar materia",
+      error: error.message,
+    });
   }
 };
 

@@ -8,6 +8,7 @@ import MateriasLista from "./pages/Materias/MateriasLista";
 import MateriaCrear from "./pages/Materias/MateriaCrear";
 import MateriaEditar from "./pages/Materias/MateriaEditar";
 import AdminRoute from "./components/AdminRoute";
+import UsuarioProgreso from "./pages/Usuarios/UsuarioProgreso";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="usuarios" element={<UsuariosLista />} />
           <Route path="usuarios/crear" element={<UsuarioCrear />} />
           <Route path="usuarios/editar/:id" element={<UsuarioEditar />} />
+          <Route path="usuarios/progreso/:id" element={<UsuarioProgreso />} />
 
           <Route path="materias" element={<MateriasLista />} />
           <Route path="materias/crear" element={<MateriaCrear />} />
