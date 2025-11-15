@@ -26,12 +26,15 @@ export default function ConfigurationScreen({ navigation }) {
         if (!storedUser) return;
 
         const userObj = JSON.parse(storedUser);
-        console.log("ID cargado desde AsyncStorage:", userObj._id);
+        const userId = userObj._id || userObj.id;
 
-        setId(userObj._id);
+        console.log("ID cargado desde AsyncStorage:", userId);
+
+        setId(userId);
         setNombre(userObj.nombre);
         setRol(userObj.rol);
         setCorreo(userObj.correo);
+
     };
 
     useEffect(() => {
@@ -64,7 +67,7 @@ export default function ConfigurationScreen({ navigation }) {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            // ✅ GUARDAR NUEVO USUARIO EN STORAGE
+            // GUARDAR NUEVO USUARIO EN STORAGE
             const newUser = {
                 _id: id,
                 nombre,
@@ -73,7 +76,7 @@ export default function ConfigurationScreen({ navigation }) {
             };
             await AsyncStorage.setItem("user", JSON.stringify(newUser));
 
-            // ✅ MOSTRAR ALERTA SIEMPRE QUE TODO SALGA BIEN
+            // MOSTRAR ALERTA SIEMPRE QUE TODO SALGA BIEN
             Alert.alert(
                 "Cuenta actualizada",
                 "Tu información ha sido actualizada correctamente.",
@@ -151,8 +154,8 @@ export default function ConfigurationScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 25, marginTop: 100, backgroundColor: "#f0f0f0" },
-    title: { fontSize: 26, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
+    container: { flex: 1, padding: 25, backgroundColor: "#f0f0f0" },
+    title: { fontSize: 26, fontWeight: "bold", marginBottom: 20, textAlign: "center", marginTop: 35 },
     label: { fontSize: 14, fontWeight: "bold", marginBottom: 5 },
     subtitle: { fontSize: 16, fontWeight: "bold", marginTop: 15, marginBottom: 5 },
     input: {

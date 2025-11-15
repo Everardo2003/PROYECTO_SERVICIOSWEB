@@ -23,8 +23,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Rutas base
-app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/materias', materiaRoutes);
+app.use("/api/usuarios", usuarioRoutes);
+app.use("/api/materias", materiaRoutes);
 app.use("/api/gpt", gptRoutes);
 app.use("/api/progreso", progresoRoutes);
 app.use("/api/",preguntaRoutes)

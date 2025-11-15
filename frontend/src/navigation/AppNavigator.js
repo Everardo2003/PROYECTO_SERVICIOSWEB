@@ -8,6 +8,10 @@ import HomeScreen from "../screens/HomeScreen";
 import MateriasScreen from "../screens/MateriasScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import ConfigurationScreen from "../screens/ConfigurationScreen";
+import TemasScreen from "../screens/TemasScreen";
+import SubtemasScreen from "../screens/SubtemasScreen";
+import SubtemaDetalleScreen from "../screens/SubtemaDetalleScreen";
+import ResolverEjercicioScreen from "../screens/ResolverEjercicioScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +28,10 @@ const AppNavigator = () => {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Materias" component={MateriasScreen} />
           <Stack.Screen name="Configuracion" component={ConfigurationScreen} />
+          <Stack.Screen name="Temas" component={TemasScreen} />
+          <Stack.Screen name="Subtemas" component={SubtemasScreen} />
+          <Stack.Screen name="SubtemaDetalleScreen" component={SubtemaDetalleScreen} />
+          <Stack.Screen name="ResolverEjercicioScreen" component={ResolverEjercicioScreen} />
           </>
         ) : (
           <>

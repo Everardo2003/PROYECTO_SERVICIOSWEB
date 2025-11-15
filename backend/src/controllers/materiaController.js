@@ -1,4 +1,5 @@
 import Materia from '../models/Materia.js';
+import mongoose from "mongoose";
 
 export const crearMateria = async (req, res) => {
   try {
@@ -50,16 +51,16 @@ export const actualizarMateria = async (req, res) => {
         contenido: tema.contenido ?? "",
         subtemas: Array.isArray(tema.subtemas)
           ? tema.subtemas.map((sub) => ({
-              nombre: sub.nombre ?? "",
-              contenido: sub.contenido ?? "",
-              ejercicios: Array.isArray(sub.ejercicios)
-                ? sub.ejercicios.map((ej) => ({
-                    pregunta: ej.pregunta ?? "",
-                    opciones: ej.opciones ?? [],
-                    respuestaCorrecta: ej.respuestaCorrecta ?? "",
-                  }))
-                : [],
-            }))
+            nombre: sub.nombre ?? "",
+            contenido: sub.contenido ?? "",
+            ejercicios: Array.isArray(sub.ejercicios)
+              ? sub.ejercicios.map((ej) => ({
+                pregunta: ej.pregunta ?? "",
+                opciones: ej.opciones ?? [],
+                respuestaCorrecta: ej.respuestaCorrecta ?? "",
+              }))
+              : [],
+          }))
           : [],
       }));
     }
@@ -95,5 +96,39 @@ export const obtenerMateriaPorId = async (req, res) => {
     res.status(500).json({ msg: "Error al obtener materia", error });
   }
 };
+
+export const obtenerSubtemasPorId = async (req, res) => {
+  try {
+        const { id } = req.params;
+
+        // Buscar en TODAS las materias al tema que coincida
+        const materia = await Materia.findOne({ "temas._id": id });
+
+        if (!materia) {
+            return res.status(404).json({
+                ok: false,
+                msg: "Tema no encontrado",
+            });
+        }
+
+        // Buscar el tema
+        const tema = materia.temas.id(id);
+
+        return res.json({
+            ok: true,
+            subtemas: tema.subtemas,
+        });
+
+    } catch (error) {
+        console.error("Error al obtener subtemas:", error);
+        return res.status(500).json({
+            ok: false,
+            msg: "Error en el servidor",
+        });
+    }
+
+
+};
+
 
 

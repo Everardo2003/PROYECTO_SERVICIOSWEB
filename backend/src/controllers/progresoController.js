@@ -191,6 +191,7 @@ export const responderEjercicioMateria = async (req, res) => {
   try {
     const { materiaId, temaNombre, subtemaNombre, pregunta, respuestaUsuario } = req.body;
     const usuarioId = req.usuario._id;
+    console.log(usuarioId);
 
     // 1️⃣ Buscar la materia
     const materia = await Materia.findById(materiaId);
@@ -206,6 +207,7 @@ export const responderEjercicioMateria = async (req, res) => {
 
     // 3️⃣ Buscar el subtema dentro del tema
     const subtema = tema.subtemas.find((s) => s.nombre === subtemaNombre);
+    console.log(subtemaNombre);
     if (!subtema) {
       return res.status(404).json({ msg: "Subtema no encontrado en el tema" });
     }

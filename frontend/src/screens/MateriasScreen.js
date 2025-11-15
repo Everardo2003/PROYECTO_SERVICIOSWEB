@@ -45,7 +45,7 @@ export default function MateriasScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, padding: 20, backgroundColor: "#F7F9FC" }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
+      <Text style={{ fontSize: 25, fontWeight: "bold", marginBottom: 20 , marginTop:45}}>
         Materias
       </Text>
 
@@ -59,7 +59,7 @@ export default function MateriasScreen({ navigation }) {
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => navigation.navigate("Temas", { materiaId: item._id })}
+              onPress={() => navigation.navigate("Temas", { materiaId: item._id ,materiaNombre: item.nombre})}
               style={{
                 padding: 20,
                 backgroundColor: "white",

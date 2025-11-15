@@ -11,7 +11,7 @@ import { protegerRuta } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.post("/responder", protegerRuta, responderEjercicio);
-router.post("/ejercicio",protegerRuta, responderEjercicioMateria);
+router.post("/ejercicio", protegerRuta,responderEjercicioMateria);
 router.get("/:id",protegerRuta, obtenerProgresoUsuario);
 router.get("/estadisticas", protegerRuta, obtenerEstadisticasProgreso);
 
