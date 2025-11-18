@@ -85,7 +85,7 @@ export const obtenerProgresoUsuario = async (req, res) => {
     const { id } = req.params;
 
     const progresos = await Progreso.find({ usuario: id })
-      .populate("usuario", "nombre correo") // 🔹 Agregado
+      .populate("usuario", "nombre correo")
       .populate("materia", "nombre")
       .populate("preguntasGeneradas")
       .sort({ fechaUltimoAvance: -1 });
@@ -102,17 +102,18 @@ export const obtenerProgresoUsuario = async (req, res) => {
     progresos.forEach((p) => {
       const materia = p.materia?.nombre || "Sin materia";
       const tema = p.tema || "Sin tema";
-      const subtema = p.subtema
-        ? p.subtema
-        : p.preguntasGeneradas
+
+      // 🔥 SI TIENE preguntasGeneradas → pertenece al TEMA, no subtema
+      const subtema = p.preguntasGeneradas
         ? "Preguntas generadas por la IA"
-        : "Sin subtema";
+        : p.subtema || "Sin subtema";
 
       if (!agrupado[materia]) agrupado[materia] = {};
       if (!agrupado[materia][tema]) agrupado[materia][tema] = {};
       if (!agrupado[materia][tema][subtema]) agrupado[materia][tema][subtema] = [];
 
       agrupado[materia][tema][subtema].push({
+        docId: p.preguntasGeneradas?._id || null, // 🔥 AQUÍ VA EL ID REAL
         pregunta: p.pregunta,
         respuestaUsuario: p.respuestaUsuario,
         esCorrecta: p.esCorrecta,
@@ -121,7 +122,6 @@ export const obtenerProgresoUsuario = async (req, res) => {
       });
     });
 
-    // 🔹 Tomamos los datos del usuario desde el primer progreso
     const usuario = {
       nombre: progresos[0].usuario?.nombre || "Desconocido",
       correo: progresos[0].usuario?.correo || "",
@@ -142,8 +142,9 @@ export const obtenerEstadisticasProgreso = async (req, res) => {
     const documentos = await PreguntasGeneradas.find({ usuario: usuarioId })
       .populate("materia", "nombre");
 
-    if (!documentos.length)
+    if (!documentos.length) {
       return res.status(404).json({ msg: "No hay preguntas generadas aún" });
+    }
 
     const estadisticas = {};
 
@@ -157,10 +158,9 @@ export const obtenerEstadisticasProgreso = async (req, res) => {
 
       const totalPreguntas = doc.preguntas.length;
 
-      // Buscar progresos relacionados a este documento
       const progresos = await Progreso.find({
         usuario: usuarioId,
-        preguntasGeneradas: doc._id, // <-- campo que debes agregar en Progreso
+        preguntasGeneradas: doc._id,
       });
 
       const respondidas = progresos.filter(p => p.respuestaUsuario).length;
@@ -170,7 +170,9 @@ export const obtenerEstadisticasProgreso = async (req, res) => {
         totalPreguntas,
         respondidas,
         correctas,
-        progreso: Math.round((correctas / totalPreguntas) * 100),
+        progreso: totalPreguntas
+          ? Math.round((correctas / totalPreguntas) * 100)
+          : 0,
         porcentajeAciertos: respondidas
           ? Math.round((correctas / respondidas) * 100)
           : 0,
@@ -191,7 +193,7 @@ export const responderEjercicioMateria = async (req, res) => {
   try {
     const { materiaId, temaNombre, subtemaNombre, pregunta, respuestaUsuario } = req.body;
     const usuarioId = req.usuario._id;
-    console.log(usuarioId);
+
 
     // 1️⃣ Buscar la materia
     const materia = await Materia.findById(materiaId);
@@ -221,8 +223,7 @@ export const responderEjercicioMateria = async (req, res) => {
     const respuestaCorrecta = ejercicio.respuestaCorrecta;
 
     // 5️⃣ Verificar si la respuesta es correcta
-    const esCorrecta =
-      respuestaUsuario.trim().toLowerCase() === respuestaCorrecta.trim().toLowerCase();
+    let esCorrecta =respuestaUsuario.trim().toLowerCase() === respuestaCorrecta.trim().toLowerCase();
 
     // 6️⃣ Generar retroalimentación con Groq (si tienes esa función)
     const retroalimentacion = await generarRetroalimentacion({
@@ -231,6 +232,21 @@ export const responderEjercicioMateria = async (req, res) => {
       respuestaCorrecta,
       esCorrecta,
     });
+        if (typeof retroalimentacion === "string") {
+          const texto = retroalimentacion.toLowerCase();
+
+          if (
+            texto.includes("correcta") ||
+            texto.includes("correcto") ||
+            texto.includes("bien hecho") ||
+            texto.includes("acertada") ||
+            texto.includes("respuesta es válida")
+          ) {
+            esCorrecta = true;
+          } else {
+            esCorrecta = false;
+          }
+        }
 
     // 7️⃣ Actualizar o crear el progreso
     const progreso = await Progreso.findOneAndUpdate(
@@ -245,8 +261,10 @@ export const responderEjercicioMateria = async (req, res) => {
         respuestaUsuario,
         esCorrecta,
         retroalimentacion,
+        YaResuelto: true,
         fechaUltimoAvance: new Date(),
         $setOnInsert: { fechaInicio: new Date() }, // solo si es nuevo
+
       },
       { new: true, upsert: true } // 🔹 crea si no existe
     );

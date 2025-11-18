@@ -2,6 +2,8 @@ import Groq from 'groq-sdk';
 import dotenv from 'dotenv';
 import Materia from '../models/Materia.js';
 import preguntaGenerada from '../models/preguntaGenerada.js';
+import Progreso from '../models/Progreso.js';
+
 dotenv.config();
 
 const client = new Groq({
@@ -62,8 +64,16 @@ Devuelve solo JSON válido, sin texto adicional. Ejemplo:
       fechaCreacion: new Date(),
       ultimaActualizacion: new Date(),
     });
-
     await registro.save();
+
+    const progreso = new Progreso({
+      usuario: usuarioId,
+      preguntasGeneradas: registro._id,
+      materia: materiaId,
+      tema: tema.nombre,
+    });
+    await progreso.save();
+
 
     return registro;
   } catch (error) {

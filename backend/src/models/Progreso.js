@@ -26,10 +26,11 @@ const progresoSchema = new mongoose.Schema({
   },
   pregunta: {
     type: String, // texto de la pregunta
-    required: true,
+    required: false,
   },
   respuestaUsuario: {
     type: String,
+    required: false,
   },
   esCorrecta: {
     type: Boolean,
@@ -37,6 +38,12 @@ const progresoSchema = new mongoose.Schema({
   },
   retroalimentacion: {
     type: String,
+    required: false,
+  },
+  YaResuelto:{
+    type: Boolean,
+    required: false,
+    default: false,
   },
   fechaInicio: {
     type: Date,

@@ -20,7 +20,7 @@ export default function HomeScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.menuButton}
-          onPress={() => navigation.navigate("Progresos")}
+          onPress={() => navigation.navigate("ProgresoScreen")}
         >
           <Text style={styles.menuText}>Progreso</Text>
         </TouchableOpacity>

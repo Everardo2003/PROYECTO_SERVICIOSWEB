@@ -12,6 +12,13 @@ import TemasScreen from "../screens/TemasScreen";
 import SubtemasScreen from "../screens/SubtemasScreen";
 import SubtemaDetalleScreen from "../screens/SubtemaDetalleScreen";
 import ResolverEjercicioScreen from "../screens/ResolverEjercicioScreen";
+import ProgresoScreen from "../screens/ProgesoScreen";
+import ProgresoTemaScreen from "../screens/ProgresoTemaScreen";
+import ProgresoMateriaScreen from "../screens/ProgresoMateriaScreen";
+import ListaDocumentosScreen from "../screens/ListaDocPreguntas";
+import DocumentoPreguntasScreen from "../screens/DocPreguntasScreen";
+import DocPreguntasScreen from "../screens/DocPreguntasScreen";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +39,11 @@ const AppNavigator = () => {
           <Stack.Screen name="Subtemas" component={SubtemasScreen} />
           <Stack.Screen name="SubtemaDetalleScreen" component={SubtemaDetalleScreen} />
           <Stack.Screen name="ResolverEjercicioScreen" component={ResolverEjercicioScreen} />
+          <Stack.Screen name="ProgresoScreen" component={ProgresoScreen} />
+          <Stack.Screen name="ProgresoMateriaScreen" component={ProgresoMateriaScreen} />
+          <Stack.Screen name="ProgresoTemaScreen" component={ProgresoTemaScreen} />
+          <Stack.Screen name="PreguntaProgresoScreen" component={ListaDocumentosScreen} />
+          <Stack.Screen name="DocPreguntasScreen" component={DocPreguntasScreen} />
           </>
         ) : (
           <>

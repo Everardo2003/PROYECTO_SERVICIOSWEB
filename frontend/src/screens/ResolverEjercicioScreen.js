@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView ,Alert,} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, } from "react-native";
 import api from "../api/axiosClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -7,11 +7,12 @@ export default function ResolverEjercicioScreen({ route, navigation }) {
     const { materiaId, temaId, pregunta, opciones, subtemaNombre, temaNombre } = route.params;
     const [respuesta, setRespuesta] = useState("");
     const [retro, setRetro] = useState("");
- 
+
 
     const enviarRespuesta = async () => {
         try {
             const token = await AsyncStorage.getItem("token");
+
             const body = {
                 materiaId,
                 temaNombre,
@@ -19,29 +20,38 @@ export default function ResolverEjercicioScreen({ route, navigation }) {
                 pregunta,
                 respuestaUsuario: respuesta,
             };
+
             const res = await api.post("/progreso/ejercicio", body, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            if (res.data.progreso?.retroalimentacion) {
+            const prog = res.data.progreso;
+            // ----------------------------
+            // 🚨 NUEVA VALIDACIÓN QUE PEDISTE
+            // Si YA EXISTE un progreso de este subtema, bloquear
+            // ----------------------------
+            setRetro(prog.retroalimentacion);
+            if (prog?.esCorrecta== true) {
                 Alert.alert(
-                    "Ejercicio ya respondido",
-                    "Dirigete a tu progreso para volver a intentarlo",
+                    "Bien hecho",
+                    retro,
                     [
                         {
-                            text: "Aceptar",
-                            onPress: () => navigation.navigate("Home"),
-                        },
+                            text: "Ir a progreso",
+                            onPress: () => navigation.navigate("ProgresoScreen"),
+                        }
                     ]
                 );
                 return;
             }
 
-            setRetro(res.data.progreso.retroalimentacion);
+            // Si es nuevo → mostrar retro
+
         } catch (error) {
             console.log("Error evaluando la respuesta", error);
         }
     };
+
 
     return (
         <ScrollView style={styles.container}>

@@ -1,4 +1,5 @@
 import { generarPreguntas } from "../services/gptService.js";
+import preguntaGenerada from "../models/preguntaGenerada.js";
 
 export const generarPreguntasHandler = async (req, res) => {
   try {
@@ -17,5 +18,18 @@ export const generarPreguntasHandler = async (req, res) => {
   } catch (error) {
     console.error("Error generando preguntas:", error);
     res.status(500).json({ msg: "Error generando preguntas", error });
+  }
+};
+export const obtenerPreguntas = async (req, res) => {
+  try {
+    const usuarioId = req.usuario._id;
+
+    const documentos = await preguntaGenerada.find({ usuario: usuarioId })
+      .populate("materia", "nombre");
+
+    res.json(documentos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Error obteniendo preguntas", error });
   }
 };
