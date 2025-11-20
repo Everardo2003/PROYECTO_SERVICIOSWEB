@@ -13,6 +13,7 @@ const MateriaEditar = () => {
     temas: [],
   });
   const [mensaje, setMensaje] = useState("");
+  const [temaAbierto, setTemaAbierto] = useState(null); // 👈 controla qué tema está abierto
 
   useEffect(() => {
     const cargarMateria = async () => {
@@ -73,10 +74,7 @@ const MateriaEditar = () => {
   const agregarTema = () => {
     setMateria({
       ...materia,
-      temas: [
-        ...materia.temas,
-        { nombre: "", contenido: "", subtemas: [] },
-      ],
+      temas: [...materia.temas, { nombre: "", contenido: "", subtemas: [] }],
     });
     setTimeout(() => temaRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
@@ -151,12 +149,12 @@ const MateriaEditar = () => {
     }
   };
 
+  // 👇 Aquí se inserta la primera mitad (JSX del formulario) que ya te di ante
+
   return (
     <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
       <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Editar Materia</h2>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Editar Materia</h2>
 
         {mensaje && (
           <div className="text-center bg-blue-50 border border-blue-200 text-blue-700 py-2 rounded mb-6">
@@ -171,7 +169,7 @@ const MateriaEditar = () => {
             <input
               type="text"
               name="nombre"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
               value={materia.nombre}
               onChange={handleChange}
               required
@@ -184,7 +182,7 @@ const MateriaEditar = () => {
             <textarea
               name="descripcion"
               rows="3"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
               value={materia.descripcion}
               onChange={handleChange}
             />
@@ -196,132 +194,135 @@ const MateriaEditar = () => {
             <button
               type="button"
               onClick={agregarTema}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-md transition"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-md"
             >
               + Agregar Tema
             </button>
           </div>
 
-          <div ref={temaRef} className="space-y-6 mt-4">
+          <div ref={temaRef} className="space-y-4 mt-4">
             {materia.temas.map((tema, i) => (
-              <div key={i} className="border border-gray-200 rounded-xl p-5 bg-gray-50 shadow-sm">
-                <div className="flex justify-between items-center mb-3">
+              <div key={i} className="border border-gray-200 rounded-xl bg-gray-50 shadow-sm">
+                {/* Encabezado del tema */}
+                <div
+                  className="flex justify-between items-center p-4 cursor-pointer"
+                  onClick={() => setTemaAbierto(temaAbierto === i ? null : i)}
+                >
                   <h4 className="font-semibold text-gray-700">
                     Tema {i + 1}: {tema.nombre || "Sin título"}
                   </h4>
                   <button
                     type="button"
-                    onClick={() => eliminarTema(i)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      eliminarTema(i);
+                    }}
                     className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md"
                   >
                     Eliminar
                   </button>
                 </div>
 
-                {/* Nombre y contenido del tema */}
-                <input
-                  type="text"
-                  name="nombre"
-                  placeholder="Nombre del tema"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-2"
-                  value={tema.nombre}
-                  onChange={(e) => handleTemaChange(i, e)}
-                />
-                <textarea
-                  name="contenido"
-                  placeholder="Contenido del tema"
-                  rows="2"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3"
-                  value={tema.contenido}
-                  onChange={(e) => handleTemaChange(i, e)}
-                />
+                {/* Contenido desplegable */}
+                {temaAbierto === i && (
+                  <div className="p-4 space-y-4 border-t border-gray-200">
+                    <input
+                      type="text"
+                      name="nombre"
+                      placeholder="Nombre del tema"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      value={tema.nombre}
+                      onChange={(e) => handleTemaChange(i, e)}
+                    />
+                    <textarea
+                      name="contenido"
+                      placeholder="Contenido del tema"
+                      rows="2"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      value={tema.contenido}
+                      onChange={(e) => handleTemaChange(i, e)}
+                    />
 
-                {/* Subtemas */}
-                <div className="space-y-4">
-                  <h5 className="text-gray-700 font-medium">Subtemas</h5>
-                  {tema.subtemas.map((sub, si) => (
-                    <div
-                      key={si}
-                      className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">
-                          Subtema {si + 1}: {sub.nombre || "Sin título"}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => eliminarSubtema(i, si)}
-                          className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-md"
-                        >
-                          X
-                        </button>
-                      </div>
-
-                      <input
-                        type="text"
-                        name="nombre"
-                        placeholder="Nombre del subtema"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-1"
-                        value={sub.nombre}
-                        onChange={(e) => handleSubtemaChange(i, si, e)}
-                      />
-                      <textarea
-                        name="contenido"
-                        placeholder="Contenido del subtema"
-                        rows="2"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-1"
-                        value={sub.contenido}
-                        onChange={(e) => handleSubtemaChange(i, si, e)}
-                      />
-
-                      {/* Ejercicios dentro del subtema */}
-                      <div className="pl-2 border-l-4 border-blue-500 mt-3">
-                        <h6 className="text-gray-700 font-medium mb-2">Ejercicios</h6>
-                        {sub.ejercicios?.map((ej, ei) => (
-                          <div
-                            key={ei}
-                            className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2"
-                          >
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm text-gray-600">
-                                Ejercicio {ei + 1}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => eliminarEjercicio(i, si, ei)}
-                                className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5 rounded"
-                              >
-                                X
-                              </button>
-                            </div>
-                            <input
-                              type="text"
-                              name="pregunta"
-                              placeholder="Pregunta"
-                              className="w-full border border-gray-300 rounded-lg px-3 py-1"
-                              value={ej.pregunta}
-                              onChange={(e) => handleEjercicioChange(i, si, ei, e)}
-                            />
+                    {/* Subtemas */}
+                    <div className="space-y-4">
+                      <h5 className="text-gray-700 font-medium">Subtemas</h5>
+                      {tema.subtemas.map((sub, si) => (
+                        <div key={si} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">
+                              Subtema {si + 1}: {sub.nombre || "Sin título"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => eliminarSubtema(i, si)}
+                              className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-md"
+                            >
+                              X
+                            </button>
                           </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => agregarEjercicio(i, si)}
-                          className="text-blue-600 hover:underline text-sm font-medium"
-                        >
-                          + Agregar Ejercicio
-                        </button>
-                      </div>
+
+                          <input
+                            type="text"
+                            name="nombre"
+                            placeholder="Nombre del subtema"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-1"
+                            value={sub.nombre}
+                            onChange={(e) => handleSubtemaChange(i, si, e)}
+                          />
+                          <textarea
+                            name="contenido"
+                            placeholder="Contenido del subtema"
+                            rows="2"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-1"
+                            value={sub.contenido}
+                            onChange={(e) => handleSubtemaChange(i, si, e)}
+                          />
+
+                          {/* Ejercicios */}
+                          <div className="pl-2 border-l-4 border-blue-500 mt-3">
+                            <h6 className="text-gray-700 font-medium mb-2">Ejercicios</h6>
+                            {sub.ejercicios?.map((ej, ei) => (
+                              <div key={ei} className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-sm text-gray-600">Ejercicio {ei + 1}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => eliminarEjercicio(i, si, ei)}
+                                    className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-0.5 rounded"
+                                  >
+                                    X
+                                  </button>
+                                </div>
+                                <input
+                                  type="text"
+                                  name="pregunta"
+                                  placeholder="Pregunta"
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-1"
+                                  value={ej.pregunta}
+                                  onChange={(e) => handleEjercicioChange(i, si, ei, e)}
+                                />
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => agregarEjercicio(i, si)}
+                              className="text-blue-600 hover:underline text-sm font-medium"
+                            >
+                              + Agregar Ejercicio
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => agregarSubtema(i)}
+                        className="text-blue-600 hover:underline text-sm font-medium"
+                      >
+                        + Agregar Subtema
+                      </button>
                     </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => agregarSubtema(i)}
-                    className="text-blue-600 hover:underline text-sm font-medium"
-                  >
-                    + Agregar Subtema
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

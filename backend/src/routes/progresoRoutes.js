@@ -3,7 +3,8 @@ import {
   responderEjercicio,
   obtenerProgresoUsuario,
   obtenerEstadisticasProgreso,
-  responderEjercicioMateria
+  responderEjercicioMateria,
+  obtenerProgresoPorDocumento,
 } from "../controllers/progresoController.js";
 import { protegerRuta } from "../middlewares/authMiddleware.js";
 
@@ -14,6 +15,6 @@ router.post("/responder", protegerRuta, responderEjercicio);
 router.post("/ejercicio", protegerRuta,responderEjercicioMateria);
 router.get("/:id",protegerRuta, obtenerProgresoUsuario);
 router.get("/usuario/estadisticas", protegerRuta, obtenerEstadisticasProgreso);
-
+router.get("/usuario/:id",protegerRuta,obtenerProgresoPorDocumento);
 
 export default router;

@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Image,
 } from "react-native";
-import api from "../api/axiosClient";
+import api from "../../api/axiosClient";
 
 export default function RegisterScreen({ navigation }) {
   const [nombre, setNombre] = useState("");
@@ -36,7 +37,7 @@ export default function RegisterScreen({ navigation }) {
 
       if (res.status === 201 || res.data) {
         Alert.alert(
-          "Cuenta creada",
+          "Cuenta creada ",
           "Tu cuenta fue creada correctamente",
           [
             {
@@ -52,7 +53,7 @@ export default function RegisterScreen({ navigation }) {
       console.log("Error al registrar:", error);
 
       if (error.response?.data?.msg) {
-        setError(error.response.data.msg); // Error del backend
+        setError(error.response.data.msg);
       } else {
         setError("No se pudo registrar el usuario");
       }
@@ -61,13 +62,16 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Crear Cuenta</Text>
+      
+
+      <Text style={styles.title}>Creacion de Cuenta</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Nombre completo"
         value={nombre}
         onChangeText={setNombre}
+        placeholderTextColor="#888"
       />
 
       <TextInput
@@ -76,6 +80,7 @@ export default function RegisterScreen({ navigation }) {
         value={correo}
         onChangeText={setCorreo}
         autoCapitalize="none"
+        placeholderTextColor="#888"
       />
 
       <TextInput
@@ -84,6 +89,7 @@ export default function RegisterScreen({ navigation }) {
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        placeholderTextColor="#888"
       />
 
       <TextInput
@@ -92,6 +98,7 @@ export default function RegisterScreen({ navigation }) {
         secureTextEntry
         value={password2}
         onChangeText={setPassword2}
+        placeholderTextColor="#888"
       />
 
       {error !== "" && <Text style={styles.error}>{error}</Text>}
@@ -101,7 +108,7 @@ export default function RegisterScreen({ navigation }) {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.linkText}>¿Ya tienes una cuenta? Iniciar sesión</Text>
+        <Text style={styles.linkText}>¿Ya tienes una cuenta? Inicia sesión</Text>
       </TouchableOpacity>
     </View>
   );
@@ -112,43 +119,60 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 30,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#e6f7e6", // verde claro tipo duolingo
+    alignItems: "center",
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+    resizeMode: "contain",
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "bold",
     marginBottom: 25,
     textAlign: "center",
+    color: "#1a8917", // verde intenso
   },
   input: {
     backgroundColor: "white",
-    padding: 12,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 25, // estilo pill
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderWidth: 2,
+    borderColor: "#1a8917",
+    fontSize: 16,
+    width: "100%",
   },
   btn: {
-    backgroundColor: "#28a745",
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: "#1a8917",
+    padding: 16,
+    borderRadius: 30,
     marginBottom: 20,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   btnText: {
     color: "white",
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
   },
   linkText: {
     color: "#007bff",
     textAlign: "center",
-    fontSize: 15,
+    fontSize: 16,
+    fontWeight: "600",
     textDecorationLine: "underline",
   },
   error: {
     color: "red",
     marginBottom: 15,
     textAlign: "center",
+    fontWeight: "bold",
   },
 });

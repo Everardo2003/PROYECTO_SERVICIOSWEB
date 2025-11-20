@@ -3,21 +3,22 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useContext } from "react";
 import { AuthContext } from "../context/authContext";
 
-import LoginScreen from "../screens/LoginScreen";
-import HomeScreen from "../screens/HomeScreen";
-import MateriasScreen from "../screens/MateriasScreen";
-import RegisterScreen from "../screens/RegisterScreen";
-import ConfigurationScreen from "../screens/ConfigurationScreen";
-import TemasScreen from "../screens/TemasScreen";
-import SubtemasScreen from "../screens/SubtemasScreen";
-import SubtemaDetalleScreen from "../screens/SubtemaDetalleScreen";
-import ResolverEjercicioScreen from "../screens/ResolverEjercicioScreen";
-import ProgresoScreen from "../screens/ProgesoScreen";
-import ProgresoTemaScreen from "../screens/ProgresoTemaScreen";
-import ProgresoMateriaScreen from "../screens/ProgresoMateriaScreen";
-import ListaDocumentosScreen from "../screens/ListaDocPreguntas";
-import DocumentoPreguntasScreen from "../screens/DocPreguntasScreen";
-import DocPreguntasScreen from "../screens/DocPreguntasScreen";
+import LoginScreen from "../screens/InicioSesion/LoginScreen";
+import HomeScreen from "../screens/PantallaPrincipal/HomeScreen";
+import MateriasScreen from "../screens/PantallaPrincipal/MateriasScreen";
+import RegisterScreen from "../screens/InicioSesion/RegisterScreen";
+import ConfigurationScreen from "../screens/PantallaPrincipal/ConfigurationScreen";
+import TemasScreen from "../screens/Materias/TemasScreen";
+import SubtemasScreen from "../screens/Materias/SubtemasScreen";
+import SubtemaDetalleScreen from "../screens/Materias/SubtemaDetalleScreen";
+import ResolverEjercicioScreen from "../screens/Materias/ResolverEjercicioScreen";
+import ProgresoScreen from "../screens/PantallaPrincipal/ProgesoScreen";
+import ProgresoTemaScreen from "../screens/Progreso/ProgresoTemaScreen";
+import ProgresoMateriaScreen from "../screens/Progreso/ProgresoMateriaScreen";
+import ListaDocumentosScreen from "../screens/Preguntas/ListaDocPreguntas";
+import DocPreguntasScreen from "../screens/Preguntas/DocPreguntasScreen";
+import ResponderPreguntaIA from "../screens/Preguntas/ResponderPreguntaIA";
+import ProgresoSubtemaScreen from "../screens/Progreso/ProgresoSubtemaScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -44,6 +45,8 @@ const AppNavigator = () => {
           <Stack.Screen name="ProgresoTemaScreen" component={ProgresoTemaScreen} />
           <Stack.Screen name="PreguntaProgresoScreen" component={ListaDocumentosScreen} />
           <Stack.Screen name="DocPreguntasScreen" component={DocPreguntasScreen} />
+          <Stack.Screen name="ResponderPreguntaIA" component={ResponderPreguntaIA} />
+          <Stack.Screen name="ProgresoSubtemaScreen" component={ProgresoSubtemaScreen} />
           </>
         ) : (
           <>

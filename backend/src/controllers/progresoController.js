@@ -7,7 +7,7 @@ export const responderEjercicio = async (req, res) => {
   try {
     const { preguntasGeneradasId, pregunta, respuestaUsuario } = req.body;
     const usuarioId = req.usuario._id;
-
+    console.log(respuestaUsuario);
     // Buscar el documento de preguntas generadas
     const registroPreguntas = await PreguntasGeneradas.findById(preguntasGeneradasId);
     if (!registroPreguntas) {
@@ -21,7 +21,6 @@ export const responderEjercicio = async (req, res) => {
     }
 
     const respuestaCorrecta = preguntaObj.respuestaCorrecta;
-
     // Verificar si la respuesta es correcta
     const esCorrecta =
       respuestaUsuario.trim().toLowerCase() === respuestaCorrecta.trim().toLowerCase();
@@ -276,6 +275,23 @@ export const responderEjercicioMateria = async (req, res) => {
   } catch (error) {
     console.error("Error procesando respuesta de ejercicio:", error);
     res.status(500).json({ msg: "Error al procesar respuesta del ejercicio", error });
+  }
+};
+// /progreso/:documentoId
+export const obtenerProgresoPorDocumento = async (req, res) => {
+  try {
+    const usuarioId = req.usuario._id;
+    const { id} = req.params;
+    console.log(id);
+    const progresos = await Progreso.find({
+      usuario: usuarioId,
+      preguntasGeneradas: id,
+    });
+
+    res.status(200).json(progresos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Error al obtener progreso", error });
   }
 };
 
