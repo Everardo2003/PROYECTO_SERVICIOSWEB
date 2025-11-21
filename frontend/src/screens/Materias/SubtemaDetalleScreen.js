@@ -89,6 +89,9 @@ export default function SubtemaDetalleScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>{subtema.nombre}</Text>
 
       {/* CONTENIDO */}
@@ -103,7 +106,7 @@ export default function SubtemaDetalleScreen({ route, navigation }) {
 
         {subtema.ejercicios?.length ? (
           subtema.ejercicios.map((ej, index) => {
-            // ✅ Verificar si este ejercicio fue respondido correctamente
+            // Verificar si este ejercicio fue respondido correctamente
             const progresoEj = ejerciciosResueltos.find(
               (resuelto) => resuelto.pregunta === ej.pregunta
             );
@@ -165,9 +168,24 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 20,
-    marginTop: 45,
+    marginTop: 80,
     textAlign: "center",
     color: "#1a8917",
+  },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 10,
+    backgroundColor: "#1a8917",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   section: { marginBottom: 25 },
   sectionTitle: { fontSize: 22, fontWeight: "bold", marginBottom: 10, color: "#1a8917" },

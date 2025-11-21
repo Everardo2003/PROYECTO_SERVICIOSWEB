@@ -83,6 +83,11 @@ export default function DocPreguntasScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Botón de regresar */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
+
       {/* Barra de progreso */}
       <View style={styles.progressContainer}>
         <Text style={styles.progressText}>
@@ -99,7 +104,7 @@ export default function DocPreguntasScreen({ route, navigation }) {
       <FlatList
         data={preguntas}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const estado = obtenerEstadoPregunta(item.pregunta);
           const retro = obtenerRetroalimentacion(item.pregunta);
           const bloqueada = estado === "correcta";
@@ -115,11 +120,14 @@ export default function DocPreguntasScreen({ route, navigation }) {
                 navigation.navigate("ResponderPreguntaIA", {
                   pregunta: item,
                   preguntasGeneradasId: documentoId,
+                  numeroPregunta: index + 1,
+                  totalPreguntas: preguntas.length,
+                  preguntas: preguntas,
                 })
               }
               disabled={bloqueada}
             >
-              <Text style={styles.question}>{item.pregunta}</Text>
+              <Text style={styles.question}>{index + 1}. {item.pregunta}</Text>
 
               <Text style={[styles.estado, { color: colorEstado[estado] }]}>
                 {estado === "correcta"
@@ -131,11 +139,10 @@ export default function DocPreguntasScreen({ route, navigation }) {
 
               {retro && <Text style={styles.retro}>{retro}</Text>}
             </TouchableOpacity>
-
-
           );
         }}
       />
+
       <TouchableOpacity
         style={styles.homeButton}
         onPress={() => navigation.navigate("Home")}
@@ -152,12 +159,28 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#E6F7E6", // verde claro tipo Duolingo
   },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 20,
+    backgroundColor: "#1a8917",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   title: {
     fontSize: 26,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
     color: "#1a8917",
+    marginTop: 10, // 👈 para que no se encime con el botón
   },
   card: {
     backgroundColor: "#FFF",

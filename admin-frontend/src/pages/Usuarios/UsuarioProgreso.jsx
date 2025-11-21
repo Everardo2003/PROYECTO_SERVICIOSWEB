@@ -5,7 +5,7 @@ import api from "../../api/axiosClient";
 const UsuarioProgreso = () => {
   const { id } = useParams();
   const [progreso, setProgreso] = useState({});
-  const [usuario, setUsuario] = useState(null); // 👈 Nuevo estado
+  const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const cargarProgreso = async () => {
@@ -24,6 +24,57 @@ const UsuarioProgreso = () => {
     cargarProgreso();
   }, []);
 
+  // 🔹 Calcular porcentaje por subtema
+  const calcularPorcentaje = (ejercicios) => {
+    if (!ejercicios || ejercicios.length === 0) return 0;
+
+    const total = ejercicios.length;
+    const resueltos = ejercicios.filter(
+      (e) => e.respuestaUsuario && e.respuestaUsuario.trim() !== ""
+    ).length;
+
+    return Math.round((resueltos / total) * 100);
+  };
+
+  // 🔹 Calcular progreso global del usuario
+  const calcularProgresoGlobal = (progreso) => {
+    let total = 0;
+    let resueltos = 0;
+
+    Object.values(progreso).forEach((temas) => {
+      Object.values(temas).forEach((subtemas) => {
+        Object.values(subtemas).forEach((ejercicios) => {
+          total += ejercicios.length;
+          resueltos += ejercicios.filter(
+            (e) => e.respuestaUsuario && e.respuestaUsuario.trim() !== ""
+          ).length;
+        });
+      });
+    });
+
+    if (total === 0) return 0;
+    return Math.round((resueltos / total) * 100);
+  };
+
+  // 🔹 Calcular fracción global (resueltos/total)
+  const calcularFraccionGlobal = (progreso) => {
+    let total = 0;
+    let resueltos = 0;
+
+    Object.values(progreso).forEach((temas) => {
+      Object.values(temas).forEach((subtemas) => {
+        Object.values(subtemas).forEach((ejercicios) => {
+          total += ejercicios.length;
+          resueltos += ejercicios.filter(
+            (e) => e.respuestaUsuario && e.respuestaUsuario.trim() !== ""
+          ).length;
+        });
+      });
+    });
+
+    return { total, resueltos };
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen text-gray-700">
@@ -31,6 +82,9 @@ const UsuarioProgreso = () => {
       </div>
     );
   }
+
+  const fraccionGlobal = calcularFraccionGlobal(progreso);
+  const porcentajeGlobal = calcularProgresoGlobal(progreso);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -54,12 +108,28 @@ const UsuarioProgreso = () => {
               {usuario.nombre}
             </p>
             <p className="text-gray-600">{usuario.correo}</p>
+
+            {/* 🔹 Progreso global */}
+            <div className="mt-4">
+              <p className="text-blue-600 font-bold mb-2">
+                Progreso global: {porcentajeGlobal}% (
+                {fraccionGlobal.resueltos}/{fraccionGlobal.total})
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div
+                  className="bg-blue-500 h-4 rounded-full"
+                  style={{ width: `${porcentajeGlobal}%` }}
+                ></div>
+              </div>
+            </div>
           </div>
         )}
 
         {Object.keys(progreso).length === 0 ? (
           <p className="text-center text-gray-600 py-8">
             No hay progreso registrado aún para este usuario.
+            <br />
+            <span className="font-bold text-blue-600">Progreso: 0%</span>
           </p>
         ) : (
           Object.entries(progreso).map(([materia, temas]) => (
@@ -67,45 +137,58 @@ const UsuarioProgreso = () => {
               <h3 className="text-xl font-semibold mb-3">{materia}</h3>
 
               {Object.entries(temas).map(([tema, subtemas]) => (
-                <div key={tema} className="bg-gray-50 border rounded-lg mb-4 p-4">
+                <div
+                  key={tema}
+                  className="bg-gray-50 border rounded-lg mb-4 p-4"
+                >
                   <h4 className="text-lg font-medium text-gray-800 mb-2">
                     Tema: {tema}
                   </h4>
 
-                  {Object.entries(subtemas).map(([subtema, ejercicios]) => (
-                    <div
-                      key={subtema}
-                      className="mb-3 border-l-4 border-blue-400 pl-3"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-semibold text-gray-700">
-                          Subtema: {subtema}
-                        </h5>
-                      </div>
+                  {Object.entries(subtemas).map(([subtema, ejercicios]) => {
+                    const porcentaje = calcularPorcentaje(ejercicios);
+                    const resueltos = ejercicios.filter(
+                      (e) => e.respuestaUsuario && e.respuestaUsuario.trim() !== ""
+                    ).length;
 
-                      <table className="w-full text-sm border border-gray-200">
-                        <thead className="bg-gray-200">
-                          <tr>
-                            <th className="p-2 text-left">Pregunta</th>
-                            <th className="p-2 text-left">Respuesta</th>
-                            <th className="p-2 text-left">Retroalimentación</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {ejercicios.map((e, index) => (
-                            <tr
-                              key={index}
-                              className="border-t hover:bg-gray-100 transition"
-                            >
-                              <td className="p-2">{e.pregunta}</td>
-                              <td className="p-2">{e.respuestaUsuario}</td>
-                              <td className="p-2">{e.retroalimentacion}</td>
+                    return (
+                      <div
+                        key={subtema}
+                        className="mb-3 border-l-4 border-blue-400 pl-3"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="font-semibold text-gray-700">
+                            Subtema: {subtema}
+                          </h5>
+                          <span className="text-sm text-gray-600">
+                            {porcentaje}% ({resueltos}/{ejercicios.length})
+                          </span>
+                        </div>
+
+                        <table className="w-full text-sm border border-gray-200">
+                          <thead className="bg-gray-200">
+                            <tr>
+                              <th className="p-2 text-left">Pregunta</th>
+                              <th className="p-2 text-left">Respuesta</th>
+                              <th className="p-2 text-left">Retroalimentación</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ))}
+                          </thead>
+                          <tbody>
+                            {ejercicios.map((e, index) => (
+                              <tr
+                                key={index}
+                                className="border-t hover:bg-gray-100 transition"
+                              >
+                                <td className="p-2">{e.pregunta}</td>
+                                <td className="p-2">{e.respuestaUsuario}</td>
+                                <td className="p-2">{e.retroalimentacion}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>

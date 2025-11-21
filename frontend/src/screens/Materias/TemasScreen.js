@@ -44,7 +44,7 @@ export default function TemasScreen({ route, navigation }) {
       );
 
       Alert.alert(
-        "✅ Preguntas generadas",
+        "Preguntas generadas",
         "Dirígete a tu progreso para continuar",
         [{ text: "Aceptar", onPress: () => navigation.navigate("ProgresoScreen") }]
       );
@@ -61,11 +61,12 @@ export default function TemasScreen({ route, navigation }) {
           navigation.navigate("Subtemas", {
             materiaId,
             id: item._id,
+            temaNumero: index + 1,
             temaNombre: item.nombre,
           })
         }
       >
-        <Text style={styles.cardTitle}>{item.nombre}</Text>
+        <Text style={styles.cardTitle}>{index + 1}.{item.nombre}</Text>
         <Text style={styles.cardDesc}>
           {item.contenido || "Sin descripción"}
         </Text>
@@ -83,6 +84,9 @@ export default function TemasScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>Temas de {materiaNombre}</Text>
 
       {cargando ? (
@@ -93,7 +97,7 @@ export default function TemasScreen({ route, navigation }) {
           keyExtractor={(item) => item._id}
           renderItem={renderTema}
           ListEmptyComponent={
-            <Text style={styles.noData}>🚀 No hay temas registrados</Text>
+            <Text style={styles.noData}>No hay temas registrados</Text>
           }
         />
       )}
@@ -107,11 +111,26 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#E6F7E6", // verde claro tipo duolingo
   },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 20,
+    backgroundColor: "#1a8917",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 25,
-    marginTop: 45,
+    marginTop: 60,
     textAlign: "center",
     color: "#1a8917",
   },

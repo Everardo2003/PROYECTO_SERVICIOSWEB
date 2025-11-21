@@ -6,10 +6,13 @@ export default function ProgresoMateriaScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>{materiaNombre}</Text>
 
       {listaTemas.length === 0 ? (
-        <Text style={styles.emptyText}>🚀 No hay progreso en esta materia</Text>
+        <Text style={styles.emptyText}>No hay progreso en esta materia</Text>
       ) : (
         <FlatList
           data={listaTemas}
@@ -41,6 +44,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#E6F7E6", // verde claro tipo duolingo
+  },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 20,
+    backgroundColor: "#1a8917",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   title: {
     marginTop: 60,

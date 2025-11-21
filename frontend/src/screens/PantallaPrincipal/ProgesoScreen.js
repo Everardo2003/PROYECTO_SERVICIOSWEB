@@ -33,6 +33,9 @@ export default function ProgresoScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>Tu Progreso</Text>
 
       {materias.length === 0 ? (
@@ -69,10 +72,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#E6F7E6", 
+    backgroundColor: "#E6F7E6",
+  },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 20,
+    backgroundColor: "#1a8917",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   title: {
-    marginTop:60,
+    marginTop: 60,
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 25,

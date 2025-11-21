@@ -69,6 +69,11 @@ export default function ListaDocumentosScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Botón de regresar */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Preguntas del tema: {temaNombre}</Text>
 
       <FlatList
@@ -136,6 +141,21 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#E6F7E6", // verde claro tipo Duolingo
   },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 20,
+    backgroundColor: "#1a8917",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   center: {
     flex: 1,
     justifyContent: "center",
@@ -148,7 +168,7 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   title: {
-    marginTop: 50,
+    marginTop: 60, // 👈 para que no se encime con el botón
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 25,

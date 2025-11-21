@@ -42,6 +42,9 @@ export default function ResolverEjercicioScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>Resolver ejercicio</Text>
 
       <Text style={styles.question}>{pregunta}</Text>
@@ -87,6 +90,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#1a8917",
   },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 10,
+    backgroundColor: "#1a8917",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   question: {
     fontSize: 20,
     fontWeight: "600",
@@ -112,8 +130,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 15,
     marginTop: 15,
-    minHeight: 100,
-    fontSize: 16,
+    minHeight: 300,
+    fontSize: 25,
   },
   button: {
     backgroundColor: "#4FC3F7", // azul claro para diferenciar
